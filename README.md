@@ -3,6 +3,8 @@
 
 ### Overall Idea
 * Split docs into training, testing, validation sets (80-10-10)
+  * We can encode the labels as 0, 1, 2; 
+    don't need to use one-hot bc `left` is inherently further away from `right` than from `center`
 * Load up each into document collections
   * Do we normalize these?
 * TF-IDF to find 500 (subject to change) most common words
@@ -13,7 +15,7 @@
         computer_classification = {}  # Note this is a dict
         for v_doc in validation_set:  # is this a query?
             closest_docs = find_k_closest_docs(v_doc, k, training_set)
-            computer_classification[v_doc] = avg_label(closest_docs)
+            computer_classification[v_doc] = avg_label(closest_docs)  # maybe median instead of mean?
         f1_scores.append(calc_f1(computer_classification, testing_set))
     ```
 * Determine best k value (using an objective metric OR shoulder method), then use testing set to check results

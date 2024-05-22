@@ -22,7 +22,9 @@
 
 
 ### To-Do
-* Design project structure (decide which classes we want to keep)
+* Design project structure
+  * Which classes do we want to keep?
+  * What classes do we want to create?
 * Clean data set
 * Expand list of noise/stop words
   * https://github.com/stopwords-iso/stopwords-en/blob/master/stopwords-en.txt

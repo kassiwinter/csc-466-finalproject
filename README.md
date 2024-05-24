@@ -25,10 +25,11 @@
 * Design project structure
   * Which classes do we want to keep?
   * What classes do we want to create?
-* Clean data set
-* Expand list of noise/stop words
+* Clean data set ✅
+* Expand list of noise/stop words ✅
   * https://github.com/stopwords-iso/stopwords-en/blob/master/stopwords-en.txt
 * Implement a stemming function?
+* Read data into DocumentCollection
 * Final report
     * Goals
     * Design
@@ -51,14 +52,17 @@ project
 │       ├─ center/
 │       └─ right/
 └─ src
+    ├─ DataProcessing
+    │   └─ DataProcessor.java
     ├─ DocumentClasses
     │   ├─ CosineDistance.java
     │   ├─ DocumentCollection.java
-    │   ├─ DocumentDistance.java
+    │   ├─ <interface> DocumentDistance.java
     │   ├─ DocumentVector.java
     │   ├─ QueryVector.java
-    │   └─ TextVector.java
-    └─ ArticleClassification.java       [main class]
+    │   └─ <abstract> TextVector.java
+    └─ main
+        └─ ArticleClassification.java
 ```
 
 ### Final Project Class
@@ -68,10 +72,10 @@ project
 If the increase in accuracy is less than some epsilon, stop.
 * Run KNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
 
-### Document Collection Class
+### DocumentCollection Class
 #### Constructor
-* Modify the constructor to loop through the 3 directories, add more noise words, strip quotations, etc.
+* Modify the constructor to loop through the 3 directories, remove noise words, strip quotations, etc.
 
-### Text Vector Class
+### TextVector Class
 #### Label Attribute
 * Add a label attribute that gets stored based on the name of the parent directory of the file. i.e. if the file is in the center directory, it's label should be center.

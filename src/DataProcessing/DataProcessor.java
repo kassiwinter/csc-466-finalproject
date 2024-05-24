@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 public class DataProcessor {
 
     private static final String rawDataDirPath = "data/raw";
-    private static final String processedDataDirPath = "data/processed";
-    private static final String[] dataSubDirs = {"left", "center", "right"};
+    public static final String processedDataDirPath = "data/processed";
+    public static final String[] dataSubDirs = {"left", "center", "right"};
 
     public static void main(String[] args) {
         if (!verifyFileStructure()) {

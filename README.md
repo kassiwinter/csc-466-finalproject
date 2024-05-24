@@ -36,7 +36,42 @@
     * Work
     * Results
 
+### Design Architecture
 
+#### Structure
+```
+project
+├─ data
+│   ├── raw
+│   │   ├─ left/
+│   │   ├─ center/
+│   │   └─ right/
+│   └── processed
+│       ├─ left/
+│       ├─ center/
+│       └─ right/
+└─ src
+    ├─ DocumentClasses
+    │   ├─ CosineDistance.java
+    │   ├─ DocumentCollection.java
+    │   ├─ DocumentDistance.java
+    │   ├─ DocumentVector.java
+    │   ├─ QueryVector.java
+    │   └─ TextVector.java
+    └─ ArticleClassification.java       [main class]
+```
 
-Grant's water quality dataset:
-- https://www.kaggle.com/datasets/adityakadiwal/water-potability
+### Final Project Class
+#### main 
+* Build a document collection to be used later when evaluating
+* Iterate through validation directory, start with k = 1, call KNN on each file where text in file is treated as a query vector, compute the accuracy and store it.
+If the increase in accuracy is less than some epsilon, stop.
+* Run KNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
+
+### Document Collection Class
+#### Constructor
+* Modify the constructor to loop through the 3 directories, add more noise words, strip quotations, etc.
+
+### Text Vector Class
+#### Label Attribute
+* Add a label attribute that gets stored based on the name of the parent directory of the file. i.e. if the file is in the center directory, it's label should be center.

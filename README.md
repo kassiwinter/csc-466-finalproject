@@ -2,8 +2,8 @@
 #### Group: Grant Baer, Logan Baker, Blake Silton, and Kassi Winter
 
 ### Overall Idea
-* Split docs into training, testing, validation sets (80-10-10)
-  * We can encode the labels as 0, 1, 2; 
+* Split docs into training, testing, validation sets (70-20-10)
+  * We can encode the labels as -1, 0, 1; 
     don't need to use one-hot bc `left` is inherently further away from `right` than from `center`
 * Load up each into document collections
   * Do we normalize these?

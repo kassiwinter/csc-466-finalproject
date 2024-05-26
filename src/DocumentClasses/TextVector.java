@@ -9,9 +9,20 @@ public abstract class TextVector implements Serializable {
      * Stores the frequency for each non-noise word
      */
     private HashMap<String, Integer> rawVector;
+    private Bias label;
 
-    public TextVector() {
+    public TextVector(String category) {
         this.rawVector = new HashMap<>();
+        switch (category) {
+            case "left":
+                this.label = Bias.LEFT;
+            case "center":
+                this.label = Bias.CENTER;
+            case "right":
+                this.label = Bias.RIGHT;
+            case null, default:
+                throw new IllegalArgumentException("Invalid article category: " + category);
+        }
     }
 
     public abstract Set<Map.Entry<String, Double>> getNormalizedVectorEntrySet();
@@ -135,5 +146,20 @@ public abstract class TextVector implements Serializable {
             if (entry.getValue() == getHighestRawFrequency())
                 return entry.getKey();
         return null;
+    }
+
+    /**
+     * Enum for encoding values of each bias.
+     */
+    private enum Bias {
+        LEFT(-1),
+        CENTER(0),
+        RIGHT(1);
+
+        public final int value;
+
+        Bias(int value) {
+            this.value = value;
+        }
     }
 }

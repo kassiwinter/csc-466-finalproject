@@ -65,7 +65,7 @@ project
         └─ ArticleClassification.java
 ```
 
-### Final Project Class
+### Final Project Design
 #### main 
 * Build a document collection to be used later when evaluating
 * Iterate through validation directory, start with k = 1, call KNN on each file where text in file is treated as a query vector, compute the accuracy and store it.
@@ -73,9 +73,15 @@ If the increase in accuracy is less than some epsilon, stop.
 * Run KNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
 
 ### DocumentCollection Class
-#### Constructor
-* Modify the constructor to loop through the 3 directories, remove noise words, strip quotations, etc.
+* Modify the constructor to loop through files in a directory, and either:
+  * take a `label` argument with which to initialize the `TextVector`, or
+  * initialize each `TextVector` with the name of the directory.
+* The constructor should only add non-stopwords to each `TextVector`.
+* Add a method to combine `DocumentCollection`instances.\
+  *Doing this instead of iterating through multiple directories in the constructor 
+reduces complexity & makes code more understandable.*
 
 ### TextVector Class
 #### Label Attribute
-* Add a label attribute that gets stored based on the name of the parent directory of the file. i.e. if the file is in the center directory, it's label should be center.
+* Add a label attribute that gets stored based on the name of the parent directory of the file,
+i.e. if the file is in the center directory, it's label should be `"center"`.

@@ -34,7 +34,7 @@ public class DocumentVector extends TextVector {
 
             int docRawFreq = getRawFrequency(word);
             int docMaxRawFreq = getHighestRawFrequency();
-            double tf = docRawFreq/ (double)docMaxRawFreq;
+            double tf = docRawFreq / (double)docMaxRawFreq;
 
             double tfIdf = tf * idf;
             normalizedVector.put(word, tfIdf);

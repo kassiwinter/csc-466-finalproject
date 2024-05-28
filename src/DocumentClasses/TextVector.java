@@ -174,6 +174,10 @@ public abstract class TextVector implements Serializable {
         return null;
     }
 
+    public int getLabel() {
+        return label.value;
+    }
+
     /**
      * Enum for encoding values of each bias.
      */

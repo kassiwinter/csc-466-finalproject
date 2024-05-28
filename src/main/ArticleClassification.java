@@ -16,6 +16,7 @@ public class ArticleClassification {
 
         // TODO: normalize each subset w.r.t. the training set.
 
+        // Optional: make a kNearestNeighbors class to house these functionalities.
         // TODO: use the validation set to find the best k value.
         //       Measuring "best" here is a design decision we will have to make.
 

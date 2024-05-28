@@ -15,7 +15,6 @@ public class ArticleClassification {
     private static final String dataDirPath = DataProcessor.processedDataDirPath;
 
     public static void main(String[] args) {
-        // TODO: read documents into labeled DocumentCollections
         HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
         try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath))) {
             for (Path classDir : dataDirStream) {

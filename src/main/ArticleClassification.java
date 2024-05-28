@@ -1,6 +1,14 @@
 package main;
 
 import DataProcessing.DataProcessor;
+import DocumentClasses.DocumentCollection;
+
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class ArticleClassification {
 
@@ -8,6 +16,16 @@ public class ArticleClassification {
 
     public static void main(String[] args) {
         // TODO: read documents into labeled DocumentCollections
+        HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
+        try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath))) {
+            for (Path classDir : dataDirStream) {
+                labeledDocCollections.put(classDir.getFileName().toString(),
+                        new DocumentCollection(classDir, "document"));
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace(System.err);
+        }
 
         // TODO: split each DocumentCollection into proportional training/validation/testing sets
         // These are split into two steps so we can guarantee the amount of left/center/right samples is nearly the same

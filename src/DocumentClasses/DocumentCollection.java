@@ -52,6 +52,7 @@ public class DocumentCollection implements Serializable {
         }
     }
 
+    // TODO: add a function to split the document collection into subsets of specified sizes [0, 1]
 
     /**
      * @param   id  the document ID to get

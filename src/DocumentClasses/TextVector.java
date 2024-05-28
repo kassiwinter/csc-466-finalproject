@@ -1,6 +1,9 @@
 package DocumentClasses;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public abstract class TextVector implements Serializable {
@@ -23,6 +26,29 @@ public abstract class TextVector implements Serializable {
             case null, default:
                 throw new IllegalArgumentException("Invalid article category: " + category);
         }
+    }
+
+    /**
+     * Generates a TextVector from the file at the given path, excluding noise words in the provided HashSet.
+     * Overwrites any existing data in the TextVector.
+     * @param filepath a Path pointing to the file containing the document words.
+     * @param noiseWords a HashSet of noiseWords to exclude from TextVector creation.
+     * @return A TextVector based on the file at the path provided.
+     */
+    public TextVector from(Path filepath, HashSet<String> noiseWords) {
+        this.rawVector = new HashMap<>();
+        try {
+            String text = Files.readString(filepath);
+            for (String word : text.split("\\s+")) {
+                if (!noiseWords.contains(word) && word.length() > 1) {
+                    this.add(word);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("An exception occurred while trying to read file at " + filepath);
+            System.err.println(e.getMessage());
+        }
+        return this;
     }
 
     public abstract Set<Map.Entry<String, Double>> getNormalizedVectorEntrySet();

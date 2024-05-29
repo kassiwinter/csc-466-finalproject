@@ -1,6 +1,9 @@
 package DocumentClasses;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public abstract class TextVector implements Serializable {
@@ -9,9 +12,43 @@ public abstract class TextVector implements Serializable {
      * Stores the frequency for each non-noise word
      */
     private HashMap<String, Integer> rawVector;
+    private Bias label;
 
-    public TextVector() {
+    public TextVector(String category) {
         this.rawVector = new HashMap<>();
+        switch (category) {
+            case "left":
+                this.label = Bias.LEFT;
+            case "center":
+                this.label = Bias.CENTER;
+            case "right":
+                this.label = Bias.RIGHT;
+            case null, default:
+                throw new IllegalArgumentException("Invalid article category: " + category);
+        }
+    }
+
+    /**
+     * Generates a TextVector from the file at the given path, excluding noise words in the provided HashSet.
+     * Overwrites any existing data in the TextVector.
+     * @param filepath a Path pointing to the file containing the document words.
+     * @param noiseWords a HashSet of noiseWords to exclude from TextVector creation.
+     * @return A TextVector based on the file at the path provided.
+     */
+    public TextVector from(Path filepath, HashSet<String> noiseWords) {
+        this.rawVector = new HashMap<>();
+        try {
+            String text = Files.readString(filepath);
+            for (String word : text.split("\\s+")) {
+                if (!noiseWords.contains(word) && word.length() > 1) {
+                    this.add(word);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("An exception occurred while trying to read file at " + filepath);
+            System.err.println(e.getMessage());
+        }
+        return this;
     }
 
     public abstract Set<Map.Entry<String, Double>> getNormalizedVectorEntrySet();
@@ -135,5 +172,24 @@ public abstract class TextVector implements Serializable {
             if (entry.getValue() == getHighestRawFrequency())
                 return entry.getKey();
         return null;
+    }
+
+    public int getLabel() {
+        return label.value;
+    }
+
+    /**
+     * Enum for encoding values of each bias.
+     */
+    private enum Bias {
+        LEFT(-1),
+        CENTER(0),
+        RIGHT(1);
+
+        public final int value;
+
+        Bias(int value) {
+            this.value = value;
+        }
     }
 }

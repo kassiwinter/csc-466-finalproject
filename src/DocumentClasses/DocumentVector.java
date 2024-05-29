@@ -8,7 +8,8 @@ public class DocumentVector extends TextVector {
 
     private HashMap<String, Double> normalizedVector;
 
-    public DocumentVector() {
+    public DocumentVector(String label) {
+        super(label);
         this.normalizedVector = new HashMap<>();
     }
 

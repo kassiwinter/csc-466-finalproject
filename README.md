@@ -76,15 +76,16 @@ infrastructure there in case we want to try different distance calculation metho
 * Build a document collection to be used later when evaluating
 * Iterate through validation directory, start with k = 1, call KNN on each file where text in file is treated as a query vector, compute the accuracy and store it.
 If the increase in accuracy is less than some epsilon, stop.
-* Run KNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
+* Run kNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
 #### DocumentCollection Class
-* Modify the constructor to loop through files in a directory, and either:
+* ✅ Modify the constructor to loop through files in a directory, and either:
   * take a `label` argument with which to initialize the `TextVector`, or
   * initialize each `TextVector` with the name of the directory.
-* The constructor should only add non-stopwords to each `TextVector`.
-* Add a method to combine `DocumentCollection`instances.\
+* ✅ The constructor should only add non-stopwords to each `TextVector`.
+  *  Stop words are handled by TextVector
+* ✅ Add a method to combine `DocumentCollection`instances.\
   *Doing this instead of iterating through multiple directories in the constructor 
 reduces complexity & makes code more understandable.*
-#### TextVector Class
-* Add a label attribute that gets stored based on the name of the parent directory of the file,
+#### TextVector Class ✅
+* ✅ Add a label attribute that gets stored based on the name of the parent directory of the file,
 i.e. if the file is in the center directory, it's label should be `"center"`.

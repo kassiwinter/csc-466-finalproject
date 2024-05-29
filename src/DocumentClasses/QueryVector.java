@@ -8,7 +8,8 @@ public class QueryVector extends TextVector {
 
     private HashMap<String, Double> normalizedVector;
 
-    public QueryVector() {
+    public QueryVector(String label) {
+        super(label);
         this.normalizedVector = new HashMap<>();
     }
 

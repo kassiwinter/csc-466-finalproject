@@ -72,11 +72,30 @@ since we're just treating each article as a document.
 * Probably don't need a `DocumentDistance` interface since we'll likely just use cosine distance, but we can leave the
 infrastructure there in case we want to try different distance calculation methods.
 * In that vein, probably don't need `OkapiDistance`.
-#### main (ArticleClassification)
-* Build a document collection to be used later when evaluating
-* Iterate through validation directory, start with k = 1, call KNN on each file where text in file is treated as a query vector, compute the accuracy and store it.
-If the increase in accuracy is less than some epsilon, stop.
-* Run kNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
+#### ArticleClassification
+`main`
+  * Build document collections for each label
+  * Separate data into training, validation, and testing document collections.
+  * Normalize the sets relative to the training set
+    * i.e. `training.normalize(training)` `validation.normalize(training)` `testing.normalize(training)`
+  * Iterate through validation directory, start with k = 1, call KNN on each file, compute the accuracy and store it.
+  If the increase in accuracy is less than some epsilon, stop.
+  * Run kNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
+
+`private ArrayList<ArrayList<Integer>> getSetIndices(DocumentCollection data, int totalDocs, int percentage, int ratio)`
+  * Given the documents in `data`, return an ArrayList of length 2 that corresponds to the validation and testing sets. The sub ArrayLists are the indices of the documents to select. The amount of indices in each list is determined by multiplying `totalDocs` by `percentage` and `ratio`
+  * `ratio` represents the ratio of documents in this collection relative to the total number of documents
+  * `percentage` represents the percentage of documents to include in this collection
+  * Is a recursive function to find the indices for both the validation and testing sets. It is recursive to make finding disjoint sets of indices easier.
+
+`private int tuneK(DocumentCollection training, DocumentCollection validation)`
+ * Choose a starting value of K, run kNN on the documents in the `validation` set and compute accuracy. Increase K and repeat until the increase in accuracy is below a chosen threshold
+ * Return the current value of K after stopping
+
+`private Bias kNN(DocumentCollection trainingSet, TextVector sample, int k)`
+  * For every document in the `trainingSet`, compute the similarity to the `sample`
+  * Return the majority label of the `k` most similar documents
+
 #### DocumentCollection Class
 * ✅ Modify the constructor to loop through files in a directory, and either:
   * take a `label` argument with which to initialize the `TextVector`, or

@@ -15,21 +15,19 @@ import java.util.List;
 public class ArticleClassification {
 
     private static final String dataDirPath = DataProcessor.processedDataDirPath;
+    private static final ArrayList<String> labels = new ArrayList<>(List.of(DataProcessor.dataSubDirs));
 
     public static void main(String[] args) {
-        ArrayList<String> labels = new ArrayList<>(List.of(new String[]{"left", "center", "right"}));
         // going into main function, we have processed data for each category at ../data/processed
 
         // DONE BY BLAKE : for each category in processed data build DocumentCollections,
         //       put them into one single folder
         HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
-        try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath))) {
+        try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath),
+                /* stream filter: */ path -> labels.contains(path.getFileName().toString()))) {
             for (Path classDir : dataDirStream) {
-                if (labels.contains(classDir.getFileName().toString())) {
-                    labeledDocCollections.put(classDir.getFileName().toString(),
-                            //
-                            new DocumentCollection(classDir, "document"));
-                }
+                labeledDocCollections.put(classDir.getFileName().toString(),
+                        new DocumentCollection(classDir, "document"));
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

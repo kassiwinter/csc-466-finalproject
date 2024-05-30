@@ -64,6 +64,15 @@ public class DocumentCollection implements Serializable {
     }
 
     /**
+     * @return A Set of all unique label values of TextVectors in this DocumentCollection.
+     */
+    public Set<Number> uniqueLabels() {
+        return this.getDocuments().stream()
+                .map(TextVector::getLabel)
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * @return the average length of a document, not counting noise words
      */
     public double getAverageDocumentLength() {

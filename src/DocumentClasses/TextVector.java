@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.Map.Entry;
 
 public abstract class TextVector implements Serializable {
 
@@ -50,6 +51,10 @@ public abstract class TextVector implements Serializable {
         }
         return this;
     }
+
+   
+    public abstract Set<String> getWords();
+    //returns a list of all of the words in the document
 
     public abstract Set<Map.Entry<String, Double>> getNormalizedVectorEntrySet();
     //returns the normalized frequency for each word

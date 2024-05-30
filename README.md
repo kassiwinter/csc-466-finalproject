@@ -94,7 +94,7 @@ infrastructure there in case we want to try different distance calculation metho
    Increase K and repeat until the increase in accuracy is below a chosen threshold
  * Return the current value of K after stopping
 
-`private Bias kNN(DocumentCollection trainingSet, TextVector sample, int k)`
+`private Integer kNN(DocumentCollection trainingSet, TextVector sample, int k)`
   * For every document in the `trainingSet`, compute the similarity to the `sample`
   * Return the majority label of the `k` most similar documents
 

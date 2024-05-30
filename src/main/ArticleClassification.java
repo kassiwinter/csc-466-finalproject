@@ -10,12 +10,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ArticleClassification {
 
     private static final String dataDirPath = DataProcessor.processedDataDirPath;
 
     public static void main(String[] args) {
+        ArrayList<String> labels = new ArrayList<>(List.of(new String[]{"left", "center", "right"}));
         // going into main function, we have processed data for each category at ../data/processed
 
         // DONE BY BLAKE : for each category in processed data build DocumentCollections,
@@ -23,7 +25,7 @@ public class ArticleClassification {
         HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
         try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath))) {
             for (Path classDir : dataDirStream) {
-                if (classDir.getFileName().toString().equals("left") || classDir.getFileName().toString().equals("center") || classDir.getFileName().toString().equals("right")) {
+                if (labels.contains(classDir.getFileName().toString())) {
                     labeledDocCollections.put(classDir.getFileName().toString(),
                             //
                             new DocumentCollection(classDir, "document"));

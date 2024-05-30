@@ -1,5 +1,7 @@
 package DocumentClasses;
 
+import org.w3c.dom.Text;
+
 import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -66,10 +68,19 @@ public class DocumentCollection implements Serializable {
     /**
      * @return A Set of all unique label values of TextVectors in this DocumentCollection.
      */
-    public Set<Number> uniqueLabels() {
+    public Set<Integer> uniqueLabels() {
         return this.getDocuments().stream()
                 .map(TextVector::getLabel)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * @return The documents with the specified label.
+     */
+    public Map<Integer, TextVector> docsWithLabel(int label) {
+        return this.getEntrySet().stream()
+                .filter(e -> e.getValue().getLabel() == label)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**

@@ -36,16 +36,15 @@ public class ArticleClassification {
 
 
         // DONE LOGAN: split each DocumentCollection into proportional training/validation/testing sets
-            // for each labeled group, pick 70% for training, 10% for valiudation, 20% for testing
-            // this will be a function where we can choose what % we want for training,val,testing
+        // for each labeled group, pick 70% for training, 10% for validation, 20% for testing
+        // this will be a function where we can choose what % we want for training,val,testing
         DocumentCollection trainingSet = new DocumentCollection();
         DocumentCollection validationSet = new DocumentCollection();
         DocumentCollection testingSet = new DocumentCollection();
         ArrayList<ArrayList<Integer>> splits;
-        int totalDocs = labeledDocCollections.get("left").getSize() + labeledDocCollections.get("center").getSize() + labeledDocCollections.get("right").getSize();
 
         for (DocumentCollection docCollection : labeledDocCollections.values()) {
-            splits = getSetIndices(docCollection, totalDocs, .1, .2, (double) docCollection.getSize() / totalDocs);
+            splits = getSetIDs(docCollection, .1, .2);
 
             for (int i = 0; i < docCollection.getSize(); i++) {
                 if (!splits.getFirst().contains(i) && !splits.getLast().contains(i)) {
@@ -61,8 +60,8 @@ public class ArticleClassification {
         }
 
         // TODO GRANT: normalize each subset with respect to the training set.
-            // this will require us to normalize training set with its self, and then normalize the
-            // validation/testing sets with respect to the tfidf values from the training normalization
+        // this will require us to normalize training set with its self, and then normalize the
+        // validation/testing sets with respect to the tfidf values from the training normalization
 
 
         // TODO KASSI: Make actual KNN function referencing Logan's KNN description
@@ -74,37 +73,47 @@ public class ArticleClassification {
         // TODO: use our selected k-value to evaluate with the testing set.
     }
 
-    private static ArrayList<ArrayList<Integer>> getSetIndices(DocumentCollection data, int totalDocs, double percentVal, double percentTest, double ratio) {
-        int numValDocs = (int) (totalDocs * percentVal * ratio);
-        int numTestDocs = (int) (totalDocs * percentTest * ratio);
-        ArrayList<ArrayList<Integer>> setIndices = new ArrayList<>();
-        ArrayList<Integer> valIndices = new ArrayList<>();
-        ArrayList<Integer> testIndices = new ArrayList<>();
+    /**
+     * Given a document collection representing a category of our data, i.e. left labeled articles,
+     * return two ArrayLists of IDs in the document collection representing documents to be included in
+     * the validation set and testing set respectively
+     * @param data the collection we want IDs from
+     * @param percentVal the percentage of data we want to be in the validation set
+     * @param percentTest the percentage of data we want to be in the testing set
+     * @return an ArrayList containing two ArrayLists of IDs where getFirst() returns the validation IDs
+     * and getLast returns the testing IDs
+     */
+    private static ArrayList<ArrayList<Integer>> getSetIDs(DocumentCollection data, double percentVal, double percentTest) {
+        int numValDocs = (int) (data.getSize() * percentVal);
+        int numTestDocs = (int) (data.getSize() * percentTest);
+        ArrayList<ArrayList<Integer>> setIndices = new ArrayList<>(2);
+        ArrayList<Integer> valIDs = new ArrayList<>();
+        ArrayList<Integer> testIDs = new ArrayList<>();
         double f;
         int maxIndex = data.getSize() - 1;
         int index;
 
-        while (valIndices.size() < numValDocs) {
+        while (valIDs.size() < numValDocs) {
             // following Math.random() suggestion for generating a random number between [0, maxIndex]
             f = Math.random() / Math.nextDown(1.0);
             index = (int) (maxIndex * f);
-            if (!valIndices.contains(index)) {
-                valIndices.add(index);
+            if (!valIDs.contains(index)) {
+                valIDs.add(index);
             }
         }
 
-        setIndices.add(valIndices);
+        setIndices.add(valIDs);
 
-        while (testIndices.size() < numTestDocs) {
+        while (testIDs.size() < numTestDocs) {
             // following Math.random() suggestion for generating a random number between [0, maxIndex]
             f = Math.random() / Math.nextDown(1.0);
             index = (int) (maxIndex * f);
-            if (!testIndices.contains(index) && !valIndices.contains(index)) {
-                testIndices.add(index);
+            if (!testIDs.contains(index) && !valIDs.contains(index)) {
+                testIDs.add(index);
             }
         }
 
-        setIndices.add(testIndices);
+        setIndices.add(testIDs);
         return setIndices;
     }
 }

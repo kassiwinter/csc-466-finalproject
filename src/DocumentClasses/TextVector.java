@@ -75,13 +75,13 @@ public abstract class TextVector implements Serializable {
      * Finds the closest documents to this TextVector in {@code documents}.
      * Calls the method findDistance on the distanceAlg variable multiple times.
      *
-     * @param   documents       A collection of documents to compare to this TextVector.
-     * @param   distanceAlg     The algorithm to use in calculating document distance.
-     * @return  The 20 closest documents as an {@code ArrayList<Integer>}.
+     * @param numDocs       The number of nearest documents to return.
+     * @param documents     A collection of documents to compare to this TextVector.
+     * @param distanceAlg   The algorithm to use in calculating document distance.
+     * @return The desired number of closest documents as an {@code ArrayList<Integer>} representing the documents' IDs.
      */
-    public ArrayList<Integer> findClosestDocuments(DocumentCollection documents, DocumentDistance distanceAlg) {
+    public ArrayList<Integer> findNClosestDocuments(int numDocs, DocumentCollection documents, DocumentDistance distanceAlg) {
         // Calls the method findDistance on the distanceAlg variable multiple times.
-        // Returns the 20 closest documents as an ArrayList<Integer>.
         Map<Double, Integer> distanceToIdMap = new HashMap<>();
         for (Map.Entry<Integer, TextVector> entry : documents.getEntrySet()) { //perhaps get self.entryset
             int docId = entry.getKey();
@@ -95,7 +95,7 @@ public abstract class TextVector implements Serializable {
         ArrayList<Integer> docIds = new ArrayList<>();
         distanceToIdMap.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
-                .limit(20)
+                .limit(numDocs)
                 .forEachOrdered(e -> docIds.add(e.getValue()));
         return docIds;
     }

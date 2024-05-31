@@ -20,6 +20,13 @@ public class KNearestNeighbors {
 
     private Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel;
 
+    /**
+     * Initialize a KNearestNeighbors object.
+     * The arguments passed to the constructor are expected to be already normalized.
+     * @param trainingSet   Used for classifying documents in the testing set.
+     * @param validationSet Used for tuning hyperparameter k.
+     * @param testingSet    Used for testing the performance of kNN classification.
+     */
     public KNearestNeighbors(DocumentCollection trainingSet,
                              DocumentCollection validationSet,
                              DocumentCollection testingSet) {

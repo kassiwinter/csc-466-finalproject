@@ -132,7 +132,7 @@ public class DocumentCollection implements Serializable {
      * @param collections An Iterable of DocumentCollections.
      * @return A single DocumentCollection containing all documents contained within the passed DocumentCollections.
      */
-    private static DocumentCollection combineCollections(Iterable<DocumentCollection> collections) {
+    public static DocumentCollection combineCollections(Iterable<DocumentCollection> collections) {
         DocumentCollection ret = new DocumentCollection();
         for (DocumentCollection collection : collections) {
             for (TextVector doc : collection.getDocuments()) {

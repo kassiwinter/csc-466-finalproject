@@ -1,7 +1,5 @@
 package DocumentClasses;
 
-import org.w3c.dom.Text;
-
 import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;

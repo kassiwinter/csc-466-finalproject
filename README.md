@@ -78,12 +78,11 @@ project
   * Test model with tuned k
   * Print Metrics
 
-`private ArrayList<ArrayList<Integer>> getSetIndices(DocumentCollection data, int totalDocs, int percentVal, int percentTest, int ratio)`
+`private static ArrayList<ArrayList<Integer>> getSetIDs(DocumentCollection data, double percentVal, double percentTest)`
   * Given the documents in `data`, return an ArrayList of length 2 that corresponds to the validation and testing sets.
-    The sub ArrayLists are the indices of the documents to select. 
-    The amount of indices in each list is determined by multiplying `totalDocs` by the respective `percentage` and `ratio`
-  * `ratio` represents the ratio of documents in this collection relative to the total number of documents
-  * `percentage` represents the percentage of documents to include in this collection
+    The sub ArrayLists are the IDs of the documents to select. 
+    The amount of indices in each list is determined by multiplying `data.getSize()` by the respective `percentVal` and `percentTest`
+  * `percentVal/percentTest` represents the percentage of documents to include in this collection
 
 ### KNearestNeighbors
 * `private final DocumentCollection trainingSet`

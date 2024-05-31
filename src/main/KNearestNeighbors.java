@@ -4,10 +4,7 @@ import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
 import DocumentClasses.DocumentVector;
 import DocumentClasses.TextVector;
-import jdk.incubator.vector.VectorOperators;
-import org.w3c.dom.Text;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

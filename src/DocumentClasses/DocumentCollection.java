@@ -127,11 +127,12 @@ public class DocumentCollection implements Serializable {
     }
 
     /**
-     * Combine an arbitrary number of DocumentCollections. Document IDs are not guaranteed to be the same.
-     * @param collections An arbitrary number of DocumentCollections.
+     * Combine an arbitrary number of DocumentCollections in an Iterable. Document IDs are not guaranteed to be the
+     * same in the returned DocumentCollection as they were, but they ARE guaranteed to be unique.
+     * @param collections An Iterable of DocumentCollections.
      * @return A single DocumentCollection containing all documents contained within the passed DocumentCollections.
      */
-    private static DocumentCollection combineCollections(DocumentCollection ... collections) {
+    private static DocumentCollection combineCollections(Iterable<DocumentCollection> collections) {
         DocumentCollection ret = new DocumentCollection();
         for (DocumentCollection collection : collections) {
             for (TextVector doc : collection.getDocuments()) {

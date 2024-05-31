@@ -82,14 +82,16 @@ infrastructure there in case we want to try different distance calculation metho
   If the increase in accuracy is less than some epsilon, stop.
   * Run kNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
 
-`private ArrayList<ArrayList<Integer>> getSetIndices(DocumentCollection data, int totalDocs, int percentage, int ratio, int level)`
-  * Given the documents in `data`, return an ArrayList of length 2 that corresponds to the validation and testing sets. The sub ArrayLists are the indices of the documents to select. The amount of indices in each list is determined by multiplying `totalDocs` by `percentage` and `ratio`
+`private ArrayList<ArrayList<Integer>> getSetIndices(DocumentCollection data, int totalDocs, int percentVal, int percentTest, int ratio)`
+  * Given the documents in `data`, return an ArrayList of length 2 that corresponds to the validation and testing sets.
+    The sub ArrayLists are the indices of the documents to select. 
+    The amount of indices in each list is determined by multiplying `totalDocs` by the respective `percentage` and `ratio`
   * `ratio` represents the ratio of documents in this collection relative to the total number of documents
   * `percentage` represents the percentage of documents to include in this collection
-  * Is a recursive function to find the indices for both the validation and testing sets. It is recursive to make finding disjoint sets of indices easier. Call number is indicated by `level`
 
 `private int tuneK(DocumentCollection training, DocumentCollection validation)`
- * Choose a starting value of K, run kNN on the documents in the `validation` set and compute accuracy. Increase K and repeat until the increase in accuracy is below a chosen threshold
+ * Choose a starting value of K, run kNN on the documents in the `validation` set and compute accuracy. 
+   Increase K and repeat until the increase in accuracy is below a chosen threshold
  * Return the current value of K after stopping
 
 `private Bias kNN(DocumentCollection trainingSet, TextVector sample, int k)`

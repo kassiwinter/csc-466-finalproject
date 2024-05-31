@@ -2,7 +2,6 @@ package main;
 
 import DataProcessing.DataProcessor;
 import DocumentClasses.DocumentCollection;
-import DocumentClasses.TextVector;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -12,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ArticleClassification {
 
@@ -45,16 +43,7 @@ public class ArticleClassification {
         DocumentCollection testingSet = new DocumentCollection();
         ArrayList<ArrayList<Integer>> splits;
 
-        // Combine our docs to ensure all docs have a unique ID
-        DocumentCollection allDocs = DocumentCollection.combineCollections(labeledDocCollections.values());
-        HashMap<Integer, DocumentCollection> docsByLabelValue = new HashMap<>();
-        for (int label : allDocs.uniqueLabels()) {
-            // By initializing new DocumentCollections using docsWithLabel(),
-            // we ensure that the unique document IDs are preserved.
-            docsByLabelValue.put(label, new DocumentCollection(allDocs.docsWithLabel(label)));
-        }
-
-        for (DocumentCollection docCollection : docsByLabelValue.values()) {
+        for (DocumentCollection docCollection : labeledDocCollections.values()) {
             splits = getSetIDs(docCollection, .1, .2);
 
             for (int i = 0; i < docCollection.getSize(); i++) {

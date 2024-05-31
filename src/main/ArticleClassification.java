@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ArticleClassification {
 
@@ -44,7 +45,16 @@ public class ArticleClassification {
         DocumentCollection testingSet = new DocumentCollection();
         ArrayList<ArrayList<Integer>> splits;
 
-        for (DocumentCollection docCollection : labeledDocCollections.values()) {
+        // Combine our docs to ensure all docs have a unique ID
+        DocumentCollection allDocs = DocumentCollection.combineCollections(labeledDocCollections.values());
+        HashMap<Integer, DocumentCollection> docsByLabelValue = new HashMap<>();
+        for (int label : allDocs.uniqueLabels()) {
+            // By initializing new DocumentCollections using docsWithLabel(),
+            // we ensure that the unique document IDs are preserved.
+            docsByLabelValue.put(label, new DocumentCollection(allDocs.docsWithLabel(label)));
+        }
+
+        for (DocumentCollection docCollection : docsByLabelValue.values()) {
             splits = getSetIDs(docCollection, .1, .2);
 
             for (int i = 0; i < docCollection.getSize(); i++) {

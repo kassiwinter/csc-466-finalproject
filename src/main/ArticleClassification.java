@@ -59,6 +59,19 @@ public class ArticleClassification {
             }
         }
 
+        trainingSet.normalize(trainingSet);
+        validationSet.normalize(trainingSet);
+        testingSet.normalize(trainingSet);
+
+        double threshold = 0.1;
+        KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
+        int k = knn.tuneK(threshold);
+        double[] metrics = knn.test(k);
+        System.out.println("Precision: " + metrics[0]);
+        System.out.println("Recall: " + metrics[1]);
+        System.out.println("F1: " + metrics[2]);
+
+
         // TODO GRANT: normalize each subset with respect to the training set.
         // this will require us to normalize training set with its self, and then normalize the
         // validation/testing sets with respect to the tfidf values from the training normalization

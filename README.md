@@ -68,21 +68,15 @@ project
 ```
 
 ### Final Project Design
-#### Thoughts about classes to keep
-* Probably don't need separate `QueryVector`, `DocumentVector` classes
-since we're just treating each article as a document.
-* Probably don't need a `DocumentDistance` interface since we'll likely just use cosine distance, but we can leave the
-infrastructure there in case we want to try different distance calculation methods.
-* In that vein, probably don't need `OkapiDistance`.
 #### ArticleClassification
 `main`
   * Build document collections for each label
   * Separate data into training, validation, and testing document collections.
   * Normalize the sets relative to the training set
     * i.e. `training.normalize(training)` `validation.normalize(training)` `testing.normalize(training)`
-  * Iterate through validation directory, start with k = 1, call KNN on each file, compute the accuracy and store it.
-  If the increase in accuracy is less than some epsilon, stop.
-  * Run kNN on the files in the testing set with the ideal value of K, compute the accuracy and evaluate.
+  * Tune a value for k
+  * Test model with tuned k
+  * Print Metrics
 
 `private ArrayList<ArrayList<Integer>> getSetIndices(DocumentCollection data, int totalDocs, int percentVal, int percentTest, int ratio)`
   * Given the documents in `data`, return an ArrayList of length 2 that corresponds to the validation and testing sets.
@@ -91,14 +85,34 @@ infrastructure there in case we want to try different distance calculation metho
   * `ratio` represents the ratio of documents in this collection relative to the total number of documents
   * `percentage` represents the percentage of documents to include in this collection
 
-`private int tuneK(DocumentCollection training, DocumentCollection validation)`
- * Choose a starting value of K, run kNN on the documents in the `validation` set and compute accuracy. 
-   Increase K and repeat until the increase in accuracy is below a chosen threshold
+### KNearestNeighbors
+* `private final DocumentCollection trainingSet`
+* `private final DocumentCollection validationSet`
+* `private final DocumentCollection testingSet`
+* `private Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel`
+
+`private int tuneK(double threshold)`
+ * Choose a starting value of K, run kNN on the documents in the `validationSet` set and compute accuracy. 
+   Increase K and repeat until the increase in accuracy is below `threshold`
  * Return the current value of K after stopping
 
-`private Integer kNN(DocumentCollection trainingSet, TextVector sample, int k)`
-  * For every document in the `trainingSet`, compute the similarity to the `sample`
-  * Return the majority label of the `k` most similar documents
+`public double[] test(int k)`
+  * For every document in the `testingSet`, run `predict` with `k`
+  * return a `double[]` representing the precision, recall, and f1 score
+    of the model
+
+`private int predict(DocumentVector sample, int k)`
+  * Return the majority label of the `k` most similar documents to `sample`
+
+`private double[] calcPrecisionAndRecall(Hashmap<Integer, DocumentCollection> computerJudgement)`
+* calculate and return the precision and recall of the `computerJudgement` using the macro average formula (imbalanced dataset but all labels equally important)
+* P_n = numCorrect / numInCluster
+* R_n = numCorrect / totalDocsInCategory
+* Total P = (P1 + P2 + P3) / 3
+* Total R = (R1 + R2 + R3) / 3
+
+`private double calcF1(double precision, double recall)`
+* return (2 * P * R) / (P + R)
 
 #### DocumentCollection Class
 * ✅ Modify the constructor to loop through files in a directory, and either:

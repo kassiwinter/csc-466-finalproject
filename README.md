@@ -42,27 +42,29 @@
 #### Structure
 ```
 project
-├─ data
-│   ├── raw
+├─ data/
+│   ├── raw/
 │   │   ├─ left/
 │   │   ├─ center/
 │   │   └─ right/
-│   └── processed
+│   └── processed/
 │       ├─ left/
 │       ├─ center/
 │       └─ right/
-└─ src
-    ├─ DataProcessing
+└─ src/
+    ├─ DataProcessing/
     │   └─ DataProcessor.java
-    ├─ DocumentClasses
+    ├─ DocumentClasses/
     │   ├─ CosineDistance.java
     │   ├─ DocumentCollection.java
     │   ├─ <interface> DocumentDistance.java
     │   ├─ DocumentVector.java
-    │   ├─ QueryVector.java
-    │   └─ <abstract> TextVector.java
-    └─ main
-        └─ ArticleClassification.java
+    │   ├─ <abstract> TextVector.java
+    │   └─ files/
+    │       └─ stopwords-en.txt
+    └─ main/
+        ├─ ArticleClassification.java
+        └─ KNearestNeighbors.java
 ```
 
 ### Final Project Design

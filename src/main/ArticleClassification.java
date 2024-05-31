@@ -9,20 +9,14 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
-
-import javax.swing.text.Position.Bias;
+import java.util.List;
 
 public class ArticleClassification {
 
     private static final String dataDirPath = DataProcessor.processedDataDirPath;
+    private static final ArrayList<String> labels = new ArrayList<>(List.of(DataProcessor.dataSubDirs));
 
     public static void main(String[] args) {
         // going into main function, we have processed data for each category at ../data/processed
@@ -30,10 +24,10 @@ public class ArticleClassification {
         // DONE BY BLAKE : for each category in processed data build DocumentCollections,
         //       put them into one single folder
         HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
-        try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath))) {
+        try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath),
+                /* stream filter: */ path -> labels.contains(path.getFileName().toString()))) {
             for (Path classDir : dataDirStream) {
                 labeledDocCollections.put(classDir.getFileName().toString(),
-                        //
                         new DocumentCollection(classDir, "document"));
             }
         } catch (IOException e) {
@@ -42,76 +36,84 @@ public class ArticleClassification {
         }
 
 
-        // TODO LOGAN: split each DocumentCollection into proportional training/validation/testing sets
-            // for each labeled group, pick 70% for training, 10% for valiudation, 20% for testing
-            // this will be a function where we cna choose what % we want for training,val,testing
+        // DONE LOGAN: split each DocumentCollection into proportional training/validation/testing sets
+        // for each labeled group, pick 70% for training, 10% for validation, 20% for testing
+        // this will be a function where we can choose what % we want for training,val,testing
+        DocumentCollection trainingSet = new DocumentCollection();
+        DocumentCollection validationSet = new DocumentCollection();
+        DocumentCollection testingSet = new DocumentCollection();
+        ArrayList<ArrayList<Integer>> splits;
+
+        for (DocumentCollection docCollection : labeledDocCollections.values()) {
+            splits = getSetIDs(docCollection, .1, .2);
+
+            for (int i = 0; i < docCollection.getSize(); i++) {
+                if (!splits.getFirst().contains(i) && !splits.getLast().contains(i)) {
+                    trainingSet.addDocument(docCollection.getDocumentById(i));
+                }
+            }
+            for (int index : splits.getFirst()) {
+                validationSet.addDocument(docCollection.getDocumentById(index));
+            }
+            for (int index : splits.getLast()) {
+                testingSet.addDocument(docCollection.getDocumentById(index));
+            }
+        }
 
         // TODO GRANT: normalize each subset with respect to the training set.
-            // this will require us to normalize training set with its self, and then normalize the
-            // validation/testing sets with respect to the tfidf values from the training normalization
+        // this will require us to normalize training set with its self, and then normalize the
+        // validation/testing sets with respect to the tfidf values from the training normalization
 
 
-        // TODO KASSI: Make actual KNN function refrencing Logan's KNN description
+        // TODO KASSI: Make actual KNN function referencing Logan's KNN description
 
-        // Optional: make a kNearestNeighbors class to house these functionalities.
         // TODO: use the validation set to find the best k value.
         //       Measuring "best" here is a design decision we will have to make.
 
         // TODO: use our selected k-value to evaluate with the testing set.
     }
 
-    /**
-     * Represents the similarity-based classification of a text document.
-     * @param trainingSet The collection of documents used for training.
-     * @param sample The text vector representing the sample document to classify.
-     * @param k The number of nearest neighbors to consider.
-     * @return The majority label among the k most similar documents.
+    /*
+     * Given a document collection representing a category of our data, i.e. left labeled articles,
+     * return two ArrayLists of IDs in the document collection representing documents to be included in
+     * the validation set and testing set respectively
+     * @param data the collection we want IDs from
+     * @param percentVal the percentage of data we want to be in the validation set
+     * @param percentTest the percentage of data we want to be in the testing set
+     * @return an ArrayList containing two ArrayLists of IDs where getFirst() returns the validation IDs
+     * and getLast returns the testing IDs
      */
-    private Integer kNN(DocumentCollection trainingSet, TextVector sample, int k) {
-        // Priority queue to store documents by their distance to the given sample
-        // - Ingeger being the 'document collection key'; Double being the 'document distance'
-        // - Acending order (meaning lowest distance comes first)
-        PriorityQueue<Map.Entry<Integer, Double>> pq = new PriorityQueue<>(Comparator.comparingDouble(Map.Entry::getValue));
+    private static ArrayList<ArrayList<Integer>> getSetIDs(DocumentCollection data, double percentVal, double percentTest) {
+        int numValDocs = (int) (data.getSize() * percentVal);
+        int numTestDocs = (int) (data.getSize() * percentTest);
+        ArrayList<ArrayList<Integer>> setIndices = new ArrayList<>(2);
+        ArrayList<Integer> valIDs = new ArrayList<>();
+        ArrayList<Integer> testIDs = new ArrayList<>();
+        double f;
+        int maxIndex = data.getSize() - 1;
+        int index;
 
-        // Calculate the Euclidean distance between the sample and each document in the training set
-        for (Map.Entry<Integer, TextVector> entry : trainingSet.getEntrySet()) {
-            int key = entry.getKey();
-            TextVector document = entry.getValue();
-            double distance = euclideanDistance(sample, document);
-            pq.offer(new AbstractMap.SimpleEntry<>(key, distance));
+        while (valIDs.size() < numValDocs) {
+            // following Math.random() suggestion for generating a random number between [0, maxIndex]
+            f = Math.random() / Math.nextDown(1.0);
+            index = (int) (maxIndex * f);
+            if (!valIDs.contains(index)) {
+                valIDs.add(index);
+            }
         }
 
-        // Get the k closest documents
-        Map<Integer, Integer> labelCount = new HashMap<>();
-        for (int i = 0; i < k && !pq.isEmpty(); i++) {
-            Map.Entry<Integer, Double> entry = pq.poll(); // note: retrieves first element and removes it
-            TextVector closestDocument = trainingSet.getDocumentById(entry.getKey());
-            Integer label = closestDocument.getLabel();
-            labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
+        setIndices.add(valIDs);
+
+        while (testIDs.size() < numTestDocs) {
+            // following Math.random() suggestion for generating a random number between [0, maxIndex]
+            f = Math.random() / Math.nextDown(1.0);
+            index = (int) (maxIndex * f);
+            if (!testIDs.contains(index) && !valIDs.contains(index)) {
+                testIDs.add(index);
+            }
         }
 
-        // Finds which label has majority closest
-        return Collections.max(labelCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+        setIndices.add(testIDs);
+        return setIndices;
     }
-
-    /**
-     * Calculates the Euclidean distance between two text vectors.
-     * @param v1 The first text vector.
-     * @param v2 The second text vector.
-     * @return The Euclidean distance between the two vectors.
-     */
-    private double euclideanDistance(TextVector v1, TextVector v2) {
-        double sum = 0.0;
-        Set<String> words = new HashSet<>(v1.getWords());
-        words.addAll(v2.getWords());
-
-        for (String word : words) {
-            double freq1 = v1.getNormalizedFrequency(word);
-            double freq2 = v2.getNormalizedFrequency(word);
-            sum += Math.pow(freq1 - freq2, 2);
-        }
-
-        return Math.sqrt(sum);
-    }
-
 }

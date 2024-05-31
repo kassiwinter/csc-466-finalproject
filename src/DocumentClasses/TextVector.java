@@ -19,10 +19,13 @@ public abstract class TextVector implements Serializable {
         switch (category) {
             case "left":
                 this.label = Bias.LEFT;
+                break;
             case "center":
                 this.label = Bias.CENTER;
+                break;
             case "right":
                 this.label = Bias.RIGHT;
+                break;
             case null, default:
                 throw new IllegalArgumentException("Invalid article category: " + category);
         }

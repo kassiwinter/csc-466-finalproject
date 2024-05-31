@@ -59,6 +59,7 @@ public class KNearestNeighbors {
     public double[] test(int k) {
         // TODO: Implement test
         double[] metrics = {0.0, 0.0, 0.0};
+        // compute precision, recall, f1 score and insert into metrics
         return metrics;
     }
 
@@ -70,6 +71,7 @@ public class KNearestNeighbors {
      */
     private int predict(DocumentVector document, int k) {
         ArrayList<Integer> nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
+        // TODO: Find majority label and return it
         return -100;
     }
 

@@ -120,10 +120,10 @@ public class DocumentCollection implements Serializable {
     /**
      * Adds a given vector to the document.
      * @param doc The TextVector to add.
-     * @return False an existing document was overwritten (key collision). True otherwise.
+     * @return False if an existing document was overwritten (key collision). True otherwise.
      */
     public boolean addDocument(TextVector doc) {
-        return (documents.putIfAbsent(++maxId, doc) == null);
+        return (documents.put(++maxId, doc) == null);
     }
 
     /**

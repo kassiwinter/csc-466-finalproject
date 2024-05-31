@@ -24,6 +24,15 @@ public class DocumentCollection implements Serializable {
     }
 
     /**
+     * Initialize the DocumentCollection from an existing HashMap of documents.
+     * @param documentMap a Map of TextVectors mapped by Integers.
+     */
+    public DocumentCollection(Map<Integer, TextVector> documentMap) {
+        this.documents = new HashMap<>(documentMap);
+        this.maxId = documentMap.keySet().stream().max(Integer::compareTo).orElse(0);
+    }
+
+    /**
      * Reads the folder specified as input and uses the files in the folder to populate the documents variable.
      * @param   dirPath     the path to the folder to open
      * @param   docType     if not "document", treat as query
@@ -61,6 +70,24 @@ public class DocumentCollection implements Serializable {
     public TextVector getDocumentById(int id) {
         /* Returns the TextVector for the document with the ID that is given. */
         return documents.get(id);
+    }
+
+    /**
+     * @return A Set of all unique label values of TextVectors in this DocumentCollection.
+     */
+    public Set<Integer> uniqueLabels() {
+        return this.getDocuments().stream()
+                .map(TextVector::getLabel)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * @return The documents with the specified label.
+     */
+    public Map<Integer, TextVector> docsWithLabel(int label) {
+        return this.getEntrySet().stream()
+                .filter(e -> e.getValue().getLabel() == label)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**

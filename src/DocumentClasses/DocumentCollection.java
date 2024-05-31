@@ -24,15 +24,6 @@ public class DocumentCollection implements Serializable {
     }
 
     /**
-     * Initialize the DocumentCollection from an existing HashMap of documents.
-     * @param documentMap a Map of TextVectors mapped by Integers.
-     */
-    public DocumentCollection(Map<Integer, TextVector> documentMap) {
-        this.documents = new HashMap<>(documentMap);
-        this.maxId = documentMap.keySet().stream().max(Integer::compareTo).orElse(0);
-    }
-
-    /**
      * Reads the folder specified as input and uses the files in the folder to populate the documents variable.
      * @param   dirPath     the path to the folder to open
      * @param   docType     if not "document", treat as query

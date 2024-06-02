@@ -82,8 +82,8 @@ public class KNearestNeighbors {
 
         Map<Integer, Integer> labelCount = new HashMap<>();
         for (int i = 0; i < k; i++) {
-            TextVector doc = trainingSet.getDocumentById(nearestDocs.get(i));
-            Integer label = doc.getLabel();
+            TextVector givenDoc = trainingSet.getDocumentById(nearestDocs.get(i));
+            Integer label = givenDoc.getLabel();
             labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
         }
 

@@ -100,10 +100,10 @@ project
   * return a `double[]` representing the precision, recall, and f1 score
     of the model
 
-`private int predict(DocumentVector sample, int k)`
+`private int predict(TextVector sample, int k)`
   * Return the majority label of the `k` most similar documents to `sample`
 
-`private double[] calcPrecisionAndRecall(Hashmap<Integer, DocumentCollection> computerJudgement)`
+`private double[] calcPrecisionAndRecall(Hashmap<Integer, DocumentCollection> computerJudgement, int k)`
 * calculate and return the precision and recall of the `computerJudgement` using the macro average formula (imbalanced dataset but all labels equally important)
 * P_n = numCorrect / numInCluster
 * R_n = numCorrect / totalDocsInCategory

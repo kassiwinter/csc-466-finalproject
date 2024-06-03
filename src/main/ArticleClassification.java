@@ -58,7 +58,7 @@ public class ArticleClassification {
             for (DocumentCollection docCollection : labeledDocCollections.values()) {
                 splits = getSetIDs(docCollection, .1, .2);
 
-                for (int i = 0; i < docCollection.getSize(); i++) {
+                for (int i = 1; i <= docCollection.getSize(); i++) {
                     if (!splits.getFirst().contains(i) && !splits.getLast().contains(i)) {
                         trainingSet.addDocument(docCollection.getDocumentById(i));
                     }
@@ -88,7 +88,9 @@ public class ArticleClassification {
 
         double threshold = 0.1;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
+        System.out.println("Tuning k...");
         int k = knn.tuneK(threshold);
+        System.out.println("Testing k = " + k + "...");
         double[] metrics = knn.test(k);
         System.out.println("Precision: " + metrics[0]);
         System.out.println("Recall: " + metrics[1]);
@@ -102,7 +104,6 @@ public class ArticleClassification {
 
         // TODO KASSI: Make actual KNN function referencing Logan's KNN description
 
-        // Optional: make a kNearestNeighbors class to house these functionalities.
         // TODO: use the validation set to find the best k value.
         //       Measuring "best" here is a design decision we will have to make.
 
@@ -126,13 +127,13 @@ public class ArticleClassification {
         ArrayList<Integer> valIDs = new ArrayList<>();
         ArrayList<Integer> testIDs = new ArrayList<>();
         double f;
-        int maxIndex = data.getSize() - 1;
+        int maxIndex = data.getSize();
         int index;
 
         while (valIDs.size() < numValDocs) {
             // following Math.random() suggestion for generating a random number between [0, maxIndex]
             f = Math.random() / Math.nextDown(1.0);
-            index = (int) (maxIndex * f);
+            index = (int) (1 * (1.0 - f) + maxIndex * f);
             if (!valIDs.contains(index)) {
                 valIDs.add(index);
             }
@@ -143,7 +144,7 @@ public class ArticleClassification {
         while (testIDs.size() < numTestDocs) {
             // following Math.random() suggestion for generating a random number between [0, maxIndex]
             f = Math.random() / Math.nextDown(1.0);
-            index = (int) (maxIndex * f);
+            index = (int) (1 * (1.0 - f) + maxIndex * f);
             if (!testIDs.contains(index) && !valIDs.contains(index)) {
                 testIDs.add(index);
             }

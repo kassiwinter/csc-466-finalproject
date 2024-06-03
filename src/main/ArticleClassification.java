@@ -153,8 +153,7 @@ public class ArticleClassification {
         setIndices.add(testIDs);
         return setIndices;
     }
-
-}
+    
     /**
      * Attempts to read a DocumentCollection from the given path.
      *

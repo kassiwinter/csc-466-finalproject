@@ -87,7 +87,7 @@ public class KNearestNeighbors {
         return Collections.max(labelCount.entrySet(), Map.Entry.comparingByValue()).getKey();
     }
 
-    private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement, int k) {
+    private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
         double totalPrecision = 0.0;
         double totalRecall = 0.0;
         HashMap<Integer, Map<Integer, TextVector>> predictionsByLabel = new HashMap<>(); // stores true labels
@@ -104,7 +104,7 @@ public class KNearestNeighbors {
             predictionsByLabel.get(trueLabel).put(i, sample); // add the prediction to the map
         }
 
-        // Calculate precision and recall for each category
+        // Calculate precision and recall for each categoryx
         for (int trueLabel : predictionsByLabel.keySet()) {
             Map<Integer, TextVector> predictionsForLabel = predictionsByLabel.get(trueLabel);
             int numCorrect = 0;
@@ -118,8 +118,8 @@ public class KNearestNeighbors {
             }
 
             // Calculates precision and recall for the category
-            double precision = (double) numCorrect / numInCluster;
-            double recall = (double) numCorrect / computerJudgement.get(trueLabel).getSize();
+            double precision = (double) numCorrect / computerJudgement.get(trueLabel).getSize();
+            double recall = (double) numCorrect / numInCluster;
 
             // Adds it to total precision and recall
             totalPrecision += precision;

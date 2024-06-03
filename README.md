@@ -103,7 +103,7 @@ project
 `private int predict(TextVector sample, int k)`
   * Return the majority label of the `k` most similar documents to `sample`
 
-`private double[] calcPrecisionAndRecall(Hashmap<Integer, DocumentCollection> computerJudgement, int k)`
+`private double[] calcPrecisionAndRecall(Hashmap<Integer, DocumentCollection> computerJudgement)`
 * calculate and return the precision and recall of the `computerJudgement` using the macro average formula (imbalanced dataset but all labels equally important)
 * P_n = numCorrect / numInCluster
 * R_n = numCorrect / totalDocsInCategory

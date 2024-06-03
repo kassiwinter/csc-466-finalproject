@@ -137,8 +137,8 @@ public class KNearestNeighbors {
             }
 
             // Calculates precision and recall for the category
-            double precision = (double) numCorrect / humanJudgment.get(label);
-            double recall = (double) numCorrect / numInCluster;
+            double precision = (double) numCorrect / numInCluster;
+            double recall = (double) numCorrect / humanJudgment.get(label);
 
             // Adds it to total precision and recall
             totalPrecision += precision;

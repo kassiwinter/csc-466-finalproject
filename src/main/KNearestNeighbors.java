@@ -106,41 +106,31 @@ public class KNearestNeighbors {
     private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
         double totalPrecision = 0.0;
         double totalRecall = 0.0;
-        HashMap<Integer, Map<Integer, TextVector>> predictionsByLabel = new HashMap<>(); // stores true labels
 
-        // Populate predictionsByLabel
-        for (int i = 0; i < testingSet.getSize(); i++) {
-            TextVector sample = testingSet.getDocumentById(i);
-            int trueLabel = sample.getLabel();
+        // go through each label (1, 0, -1) / bias category
+        for (int label : computerJudgement.keySet()) {
+            DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
+            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();   // access all of the docs predicted under that category
 
-            if (!predictionsByLabel.containsKey(trueLabel)) {        // note: if the true label is not in the map yet
-                predictionsByLabel.put(trueLabel, new HashMap<>());
-            }
-
-            predictionsByLabel.get(trueLabel).put(i, sample); // add the prediction to the map
-        }
-
-        // Calculate precision and recall for each category
-        for (int trueLabel : predictionsByLabel.keySet()) {
-            Map<Integer, TextVector> predictionsForLabel = predictionsByLabel.get(trueLabel);
             int numCorrect = 0;
-            int numInCluster = predictionsForLabel.size();
+            int numInCluster = predictions.size();
 
-            // Counts the number of correctly predicted documents
-            for (int documentId : predictionsForLabel.keySet()) {
-                if (predictionsForLabel.get(documentId).getLabel() == trueLabel) {
+            for (TextVector doc : predictions) { // go through each of the predicted docs
+                if (doc.getLabel() == label) {  // see if their actual label matches their predicted label
                     numCorrect++;
                 }
             }
 
             // Calculates precision and recall for the category
-            double precision = (double) numCorrect / computerJudgement.get(trueLabel).getSize();
+            double precision = (double) numCorrect / computerJudgement.get(label).getSize();
             double recall = (double) numCorrect / numInCluster;
 
             // Adds it to total precision and recall
             totalPrecision += precision;
             totalRecall += recall;
+
         }
+
 
         // Calculates the macro average precision and recall
         double macroAvgPrecision = totalPrecision / computerJudgement.size();

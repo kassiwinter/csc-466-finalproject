@@ -64,8 +64,9 @@ public class ArticleClassification {
         testingSet.normalize(trainingSet);
 
         double threshold = 0.1;
+        int maxK = 10;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
-        int k = knn.tuneK(threshold);
+        int k = knn.tuneK(threshold, maxK);
         double[] metrics = knn.test(k);
         System.out.println("Precision: " + metrics[0]);
         System.out.println("Recall: " + metrics[1]);

@@ -3,7 +3,7 @@ package main;
 import DataProcessing.DataProcessor;
 import DocumentClasses.DocumentCollection;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +16,10 @@ public class ArticleClassification {
 
     private static final String dataDirPath = DataProcessor.processedDataDirPath;
     private static final ArrayList<String> labels = new ArrayList<>(List.of(DataProcessor.dataSubDirs));
+
+    private static final String serializedTrainingSetPath = "src/main/files/serializedTrainingSet.ser";
+    private static final String serializedTestingSetPath = "src/main/files/serializedTestingSet.ser";
+    private static final String serializedValidationSetPath = "src/main/files/serializedValidationSet.ser";
 
     public static void main(String[] args) {
         // going into main function, we have processed data for each category at ../data/processed
@@ -34,34 +38,53 @@ public class ArticleClassification {
             e.printStackTrace(System.err);
         }
 
+        // Attempt to load testing/training/validation sets from serialized objects. (Blake)
+        DocumentCollection trainingSet = readDocumentCollection(serializedTrainingSetPath);
+        DocumentCollection testingSet = readDocumentCollection(serializedTestingSetPath);
+        DocumentCollection validationSet = readDocumentCollection(serializedValidationSetPath);
 
-        // DONE LOGAN: split each DocumentCollection into proportional training/validation/testing sets
-        // for each labeled group, pick 70% for training, 10% for validation, 20% for testing
-        // this will be a function where we can choose what % we want for training,val,testing
-        DocumentCollection trainingSet = new DocumentCollection();
-        DocumentCollection validationSet = new DocumentCollection();
-        DocumentCollection testingSet = new DocumentCollection();
-        ArrayList<ArrayList<Integer>> splits;
+        // If any set couldn't be loaded, new sets must be constructed.
+        if (trainingSet == null || testingSet == null || validationSet == null) {
+            System.out.println("Failed to read serialized training, testing, or validation set.\n" +
+                    "Generating new DocumentCollections...");
+            // DONE LOGAN: split each DocumentCollection into proportional training/validation/testing sets
+            // for each labeled group, pick 70% for training, 10% for validation, 20% for testing
+            // this will be a function where we can choose what % we want for training,val,testing
+            trainingSet = new DocumentCollection();
+            validationSet = new DocumentCollection();
+            testingSet = new DocumentCollection();
+            ArrayList<ArrayList<Integer>> splits;
 
-        for (DocumentCollection docCollection : labeledDocCollections.values()) {
-            splits = getSetIDs(docCollection, .1, .2);
+            for (DocumentCollection docCollection : labeledDocCollections.values()) {
+                splits = getSetIDs(docCollection, .1, .2);
 
-            for (int i = 0; i < docCollection.getSize(); i++) {
-                if (!splits.getFirst().contains(i) && !splits.getLast().contains(i)) {
-                    trainingSet.addDocument(docCollection.getDocumentById(i));
+                for (int i = 0; i < docCollection.getSize(); i++) {
+                    if (!splits.getFirst().contains(i) && !splits.getLast().contains(i)) {
+                        trainingSet.addDocument(docCollection.getDocumentById(i));
+                    }
+                }
+                for (int index : splits.getFirst()) {
+                    validationSet.addDocument(docCollection.getDocumentById(index));
+                }
+                for (int index : splits.getLast()) {
+                    testingSet.addDocument(docCollection.getDocumentById(index));
                 }
             }
-            for (int index : splits.getFirst()) {
-                validationSet.addDocument(docCollection.getDocumentById(index));
-            }
-            for (int index : splits.getLast()) {
-                testingSet.addDocument(docCollection.getDocumentById(index));
-            }
-        }
+            System.out.println("Normalizing training set...");
+            trainingSet.normalize(trainingSet);
+            System.out.println("Normalizing testing set...");
+            validationSet.normalize(trainingSet);
+            System.out.println("Normalizing validation set...");
+            testingSet.normalize(trainingSet);
 
-        trainingSet.normalize(trainingSet);
-        validationSet.normalize(trainingSet);
-        testingSet.normalize(trainingSet);
+            //Serialize generated sets (Blake)
+            System.out.println("Serializing normalized training set...");
+            writeDocumentCollection(trainingSet, serializedTrainingSetPath);
+            System.out.println("Serializing normalized testing set...");
+            writeDocumentCollection(testingSet, serializedTestingSetPath);
+            System.out.println("Serializing normalized validation set...");
+            writeDocumentCollection(validationSet, serializedValidationSetPath);
+        }
 
         double threshold = 0.1;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
@@ -128,5 +151,40 @@ public class ArticleClassification {
 
         setIndices.add(testIDs);
         return setIndices;
+    }
+
+    /**
+     * Attempts to read a DocumentCollection from the given path.
+     *
+     * @param path a string representation of a path.
+     * @return the DocumentCollection if successful, null otherwise.
+     */
+    private static DocumentCollection readDocumentCollection(String path) {
+        DocumentCollection collection = null;
+        try (ObjectInputStream is = new ObjectInputStream(new FileInputStream(path))) {
+            collection = (DocumentCollection) is.readObject();
+            System.out.println("Loaded DocumentCollection from path " + path);
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println(e.getMessage());
+            System.out.println("Couldn't load DocumentCollection from path " + path);
+            e.printStackTrace(System.err);
+        }
+        return collection;
+    }
+
+    /**
+     * Attempts to write a DocumentCollection to a serialized object.
+     *
+     * @param dc   The object to serialize.
+     * @param path The destination to write to.
+     */
+    private static void writeDocumentCollection(DocumentCollection dc, String path) {
+        try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(path))) {
+            os.writeObject(dc);
+        } catch (Exception e) {
+            System.err.println("Serializing DocumentCollection to path " + path + " failed.");
+            System.err.println(e.getMessage());
+            e.printStackTrace(System.err);
+        }
     }
 }

@@ -2,21 +2,25 @@ package main;
 
 import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
-import DocumentClasses.DocumentVector;
 import DocumentClasses.TextVector;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class KNearestNeighbors {
+    /**
+     * The number of closestDocuments to store under the hood. Saves repeat computations.
+     */
+    private static final int numClosestDocuments = 50;
+
     private final DocumentCollection trainingSet;
     private final DocumentCollection validationSet;
     private final DocumentCollection testingSet;
 
-    private Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel;
+    private final Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel;
+    /**
+     * Stores the closest docs found by findNClosestDocuments, with N
+     */
+    private final Map<TextVector, ArrayList<Integer>> closestDocs;
 
     /**
      * Initialize a KNearestNeighbors object.
@@ -36,6 +40,7 @@ public class KNearestNeighbors {
         for (Integer label : uniqueLabels) {
             this.trainingDocsByLabel.put(label, this.trainingSet.docsWithLabel(label));
         }
+        this.closestDocs = new HashMap<>();
     }
 
     /**
@@ -75,7 +80,10 @@ public class KNearestNeighbors {
      * @return The predicted label of the document.
      */
     private int predict(TextVector document, int k) {
-        ArrayList<Integer> nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
+        // using dynamic mapping of closest documents, so they don't have to be found every time `predict()` runs
+        closestDocs.putIfAbsent(document,
+                document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance()));
+        List<Integer> nearestDocs = closestDocs.get(document).subList(0, k);
 
         Map<Integer, Integer> labelCount = new HashMap<>();
         for (int i = 0; i < k; i++) {
@@ -104,7 +112,7 @@ public class KNearestNeighbors {
             predictionsByLabel.get(trueLabel).put(i, sample); // add the prediction to the map
         }
 
-        // Calculate precision and recall for each categoryx
+        // Calculate precision and recall for each category
         for (int trueLabel : predictionsByLabel.keySet()) {
             Map<Integer, TextVector> predictionsForLabel = predictionsByLabel.get(trueLabel);
             int numCorrect = 0;

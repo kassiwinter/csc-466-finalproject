@@ -18,9 +18,11 @@ public class KNearestNeighbors {
 
     private final Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel;
     /**
-     * Stores the closest docs found by findNClosestDocuments, with N
+     * Stores closest document mappings.
+     * Specifically, should map a TextVector to a list of closest training documents,
+     *      represented by their IDs and sorted by descending closeness.
      */
-    private final Map<TextVector, ArrayList<Integer>> closestDocs;
+    private final Map<TextVector, ArrayList<Integer>> closestTrainingDocs;
 
     /**
      * Initialize a KNearestNeighbors object.
@@ -40,7 +42,7 @@ public class KNearestNeighbors {
         for (Integer label : uniqueLabels) {
             this.trainingDocsByLabel.put(label, this.trainingSet.docsWithLabel(label));
         }
-        this.closestDocs = new HashMap<>();
+        this.closestTrainingDocs = new HashMap<>();
     }
 
     /**
@@ -81,9 +83,15 @@ public class KNearestNeighbors {
      */
     private int predict(TextVector document, int k) {
         // using dynamic mapping of closest documents, so they don't have to be found every time `predict()` runs
-        closestDocs.putIfAbsent(document,
-                document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance()));
-        List<Integer> nearestDocs = closestDocs.get(document).subList(0, k);
+        List<Integer> nearestDocs;
+        if (k > numClosestDocuments) {
+            System.err.println("k > numClosestDocuments. Expect reduced performance.");
+            nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
+        } else {
+            closestTrainingDocs.putIfAbsent(document,
+                    document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance()));
+            nearestDocs = closestTrainingDocs.get(document).subList(0, k);
+        }
 
         Map<Integer, Integer> labelCount = new HashMap<>();
         for (int i = 0; i < k; i++) {

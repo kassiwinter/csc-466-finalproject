@@ -16,7 +16,7 @@ public class DocumentCollection implements Serializable {
      * Maps each document ID to a {@link TextVector}.
      */
     private final HashMap<Integer, TextVector> documents;
-    private int maxId;
+    public int maxId;
 
     public DocumentCollection() {
         documents = new HashMap<>();

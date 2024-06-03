@@ -46,27 +46,37 @@ public class ArticleClassification {
         for (DocumentCollection docCollection : labeledDocCollections.values()) {
             splits = getSetIDs(docCollection, .1, .2);
 
-            for (int i = 0; i < docCollection.getSize(); i++) {
+            System.out.println("Building training set...");
+            for (int i = 1; i <= docCollection.maxId; i++) {
                 if (!splits.getFirst().contains(i) && !splits.getLast().contains(i)) {
                     trainingSet.addDocument(docCollection.getDocumentById(i));
                 }
             }
+
+            System.out.println("Building validation set...");
             for (int index : splits.getFirst()) {
                 validationSet.addDocument(docCollection.getDocumentById(index));
             }
+
+            System.out.println("Building testing set...");
             for (int index : splits.getLast()) {
                 testingSet.addDocument(docCollection.getDocumentById(index));
             }
         }
 
+        System.out.println("Normalizing training set...");
         trainingSet.normalize(trainingSet);
+        System.out.println("Normalizing validation set...");
         validationSet.normalize(trainingSet);
+        System.out.println("Normalizing testing set...");
         testingSet.normalize(trainingSet);
 
         double threshold = 0.1;
         int maxK = 10;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
+        System.out.println("Tuning k...");
         int k = knn.tuneK(threshold, maxK);
+        System.out.println("Testing k = " + k + "...");
         double[] metrics = knn.test(k);
         System.out.println("Precision: " + metrics[0]);
         System.out.println("Recall: " + metrics[1]);
@@ -103,13 +113,13 @@ public class ArticleClassification {
         ArrayList<Integer> valIDs = new ArrayList<>();
         ArrayList<Integer> testIDs = new ArrayList<>();
         double f;
-        int maxIndex = data.getSize() - 1;
+        int maxIndex = data.maxId;
         int index;
 
         while (valIDs.size() < numValDocs) {
             // following Math.random() suggestion for generating a random number between [0, maxIndex]
             f = Math.random() / Math.nextDown(1.0);
-            index = (int) (maxIndex * f);
+            index = (int) (1 * (1.0-f) + maxIndex * f);
             if (!valIDs.contains(index)) {
                 valIDs.add(index);
             }
@@ -120,7 +130,7 @@ public class ArticleClassification {
         while (testIDs.size() < numTestDocs) {
             // following Math.random() suggestion for generating a random number between [0, maxIndex]
             f = Math.random() / Math.nextDown(1.0);
-            index = (int) (maxIndex * f);
+            index = (int) (1 * (1.0-f) + maxIndex * f);
             if (!testIDs.contains(index) && !valIDs.contains(index)) {
                 testIDs.add(index);
             }

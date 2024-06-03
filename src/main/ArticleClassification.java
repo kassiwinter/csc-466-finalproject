@@ -110,7 +110,7 @@ public class ArticleClassification {
         // TODO: use our selected k-value to evaluate with the testing set.
     }
 
-    /**
+    /*
      * Given a document collection representing a category of our data, i.e. left labeled articles,
      * return two ArrayLists of IDs in the document collection representing documents to be included in
      * the validation set and testing set respectively
@@ -154,6 +154,7 @@ public class ArticleClassification {
         return setIndices;
     }
 
+}
     /**
      * Attempts to read a DocumentCollection from the given path.
      *

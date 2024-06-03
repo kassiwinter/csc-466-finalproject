@@ -103,7 +103,7 @@ project
   * return a `double[]` representing the precision, recall, and f1 score
     of the model
 
-`private int predict(DocumentVector sample, int k)`
+`private int predict(TextVector sample, int k)`
   * Return the majority label of the `k` most similar documents to `sample`
 
 `private double[] calcPrecisionAndRecall(Hashmap<Integer, DocumentCollection> computerJudgement)`

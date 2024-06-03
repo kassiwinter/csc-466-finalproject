@@ -2,20 +2,27 @@ package main;
 
 import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
-import DocumentClasses.DocumentVector;
 import DocumentClasses.TextVector;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class KNearestNeighbors {
+    /**
+     * The number of closestDocuments to store under the hood. Saves repeat computations.
+     */
+    private static final int numClosestDocuments = 50;
+
     private final DocumentCollection trainingSet;
     private final DocumentCollection validationSet;
     private final DocumentCollection testingSet;
 
-    private Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel;
+    private final Map<Integer, Map<Integer, TextVector>> trainingDocsByLabel;
+    /**
+     * Stores closest document mappings.
+     * Specifically, should map a TextVector to a list of closest training documents,
+     *      represented by their IDs and sorted by descending closeness.
+     */
+    private final Map<TextVector, ArrayList<Integer>> closestTrainingDocs;
 
     /**
      * Initialize a KNearestNeighbors object.
@@ -35,6 +42,7 @@ public class KNearestNeighbors {
         for (Integer label : uniqueLabels) {
             this.trainingDocsByLabel.put(label, this.trainingSet.docsWithLabel(label));
         }
+        this.closestTrainingDocs = new HashMap<>();
     }
 
     /**
@@ -73,26 +81,81 @@ public class KNearestNeighbors {
      * @param k The number of neighbors to check.
      * @return The predicted label of the document.
      */
-    private int predict(DocumentVector document, int k) {
-        ArrayList<Integer> nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
-        // TODO: Find majority label and return it
-        return -100;
+    private int predict(TextVector document, int k) {
+        // using dynamic mapping of closest documents, so they don't have to be found every time `predict()` runs
+        List<Integer> nearestDocs;
+        if (k > numClosestDocuments) {
+            System.err.println("k > numClosestDocuments. Expect reduced performance.");
+            nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
+        } else {
+            closestTrainingDocs.putIfAbsent(document,
+                    document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance()));
+            nearestDocs = closestTrainingDocs.get(document).subList(0, k);
+        }
+
+        Map<Integer, Integer> labelCount = new HashMap<>();
+        for (int i = 0; i < k; i++) {
+            TextVector givenDoc = trainingSet.getDocumentById(nearestDocs.get(i));
+            Integer label = givenDoc.getLabel();
+            labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
+        }
+
+        return Collections.max(labelCount.entrySet(), Map.Entry.comparingByValue()).getKey();
     }
 
-    private double calcPrecision() {
-        // TODO: Implement calcPrecision
-        // make predictions for each doc
-        HashMap<Integer, Map<Integer, TextVector>> predictionsByLabel = new HashMap<>();
-        return 0.0;
+    private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
+        double totalPrecision = 0.0;
+        double totalRecall = 0.0;
+        HashMap<Integer, Integer> humanJudgment = new HashMap<>();
+
+         // Loop #1: Get the number of actual given labels in each category
+         for (int label : computerJudgement.keySet()) {
+            DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
+            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();  
+
+            for (TextVector doc : predictions) {
+                if (!humanJudgment.containsKey(doc.getLabel())) { 
+                    humanJudgment.put(doc.getLabel(), 0);
+                }
+                int newLabelCount = humanJudgment.get(doc.getLabel()) + 1;
+                humanJudgment.put(doc.getLabel(), newLabelCount);
+            }
+        }   
+
+        // Loop # 2: Get the number of correct label perdictions (assigned vs accurate)
+        for (int label : computerJudgement.keySet()) {                                      // go through each label (1, 0, -1) / bias category
+            DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
+            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();   // access all of the docs predicted under that category
+
+            int numCorrect = 0;
+            int numInCluster = predictions.size();
+
+            for (TextVector doc : predictions) { // go through each of the predicted docs
+                if (doc.getLabel() == label) {  // see if their actual label matches their predicted label
+                    numCorrect++;
+                }
+            }
+
+            // Calculates precision and recall for the category
+            double precision = (double) numCorrect / numInCluster;
+            double recall = (double) numCorrect / humanJudgment.get(label);
+
+            // Adds it to total precision and recall
+            totalPrecision += precision;
+            totalRecall += recall;
+
+        }
+
+
+        // Calculates the macro average precision and recall
+        double macroAvgPrecision = totalPrecision / computerJudgement.size();
+        double macroAvgRecall = totalRecall / computerJudgement.size();
+
+        return new double[]{macroAvgPrecision, macroAvgRecall};
+
     }
 
-    private double calcRecall() {
-        // TODO: Implement calcRecall
-        return 0.0;
-    }
-
-    private double calcF1() {
-        // TODO: Implement calcF1
-        return 0.0;
+    private double calcF1(double precision, double recall) {
+        return (2 * precision * recall) / (precision + recall);
     }
 }

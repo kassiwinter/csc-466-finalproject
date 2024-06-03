@@ -47,10 +47,28 @@ public class KNearestNeighbors {
      * @param threshold The minimum improvement in f1 score required to consider an increase in k worthwhile.
      * @return The value of k determined to be optimal.
      */
-    public int tuneK(double threshold) {
-        // TODO: Implement tuneK
-        return 0;
+    public int tuneK(double threshold, int maxK) {
+        double bestF1 = 0;
+        int bestK = 1;
+        for (int k = 1; k <= maxK; k++) {
+            HashMap<Integer, Integer> computedClassifications = new HashMap<>();
+            for (Map.Entry<Integer, TextVector> entry : validationSet.getEntrySet()) {
+                TextVector vDoc = entry.getValue();
+                int predictedLabel = predict(vDoc, k);
+                computedClassifications.put(entry.getKey(), predictedLabel);
+            }
+            double[] metrics = calcPrecisionAndRecall(computedClassifications);
+            double currentF1 = calcF1(metrics[0], metrics[1]);
+            if (currentF1 > bestF1 + threshold) {
+                bestF1 = currentF1;
+                bestK = k;
+            } else {
+                break;
+            }
+        }
+        return bestK;
     }
+
 
     /**
      * Tests the performance of kNN using the given value of k.
@@ -62,10 +80,16 @@ public class KNearestNeighbors {
      * @return an array of doubles representing (in order): precision, recall, f1 score
      */
     public double[] test(int k) {
-        // TODO: Implement test
-        double[] metrics = {0.0, 0.0, 0.0};
-        // compute precision, recall, f1 score and insert into metrics
-        return metrics;
+        HashMap<Integer, Integer> computedClassifications = new HashMap<>();
+        for (Map.Entry<Integer, TextVector> entry : testingSet.getEntrySet()) {
+            TextVector tDoc = entry.getValue();
+            int predictedLabel = predict(tDoc, k);
+            
+            computedClassifications.put(entry.getKey(), predictedLabel);
+        }
+        double[] metrics = calcPrecisionAndRecall(computedClassifications);
+        double f1 = calcF1(metrics[0], metrics[1]);
+        return new double[]{metrics[0], metrics[1], f1};
     }
 
     /**
@@ -80,7 +104,8 @@ public class KNearestNeighbors {
         Map<Integer, Integer> labelCount = new HashMap<>();
         for (int i = 0; i < k; i++) {
             TextVector givenDoc = trainingSet.getDocumentById(nearestDocs.get(i));
-            Integer label = givenDoc.getLabel();
+            Integer label = givenDoc.getLabel();  
+
             labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
         }
 
@@ -95,7 +120,7 @@ public class KNearestNeighbors {
         // Populate predictionsByLabel
         for (int i = 0; i < testingSet.getSize(); i++) {
             TextVector sample = testingSet.getDocumentById(i);
-            int trueLabel = sample.getLabel();
+            int trueLabel = sample.getLabel(); 
 
             if (!predictionsByLabel.containsKey(trueLabel)) {        // note: if the true label is not in the map yet
                 predictionsByLabel.put(trueLabel, new HashMap<>());
@@ -138,3 +163,6 @@ public class KNearestNeighbors {
         return (2 * precision * recall) / (precision + recall);
     }
 }
+
+
+

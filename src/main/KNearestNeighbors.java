@@ -106,9 +106,24 @@ public class KNearestNeighbors {
     private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
         double totalPrecision = 0.0;
         double totalRecall = 0.0;
+        HashMap<Integer, Integer> humanJudgment = new HashMap<>();
 
-        // go through each label (1, 0, -1) / bias category
-        for (int label : computerJudgement.keySet()) {
+         // Loop #1: Get the number of actual given labels in each category
+         for (int label : computerJudgement.keySet()) {
+            DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
+            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();  
+
+            for (TextVector doc : predictions) {
+                if (!humanJudgment.containsKey(doc.getLabel())) { 
+                    humanJudgment.put(doc.getLabel(), 0);
+                }
+                int newLabelCount = humanJudgment.get(doc.getLabel()) + 1;
+                humanJudgment.put(doc.getLabel(), newLabelCount);
+            }
+        }   
+
+        // Loop # 2: Get the number of correct label perdictions (assigned vs accurate)
+        for (int label : computerJudgement.keySet()) {                                      // go through each label (1, 0, -1) / bias category
             DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
             Collection<TextVector> predictions = predictedLabelCollection.getDocuments();   // access all of the docs predicted under that category
 
@@ -122,7 +137,7 @@ public class KNearestNeighbors {
             }
 
             // Calculates precision and recall for the category
-            double precision = (double) numCorrect / computerJudgement.get(label).getSize();
+            double precision = (double) numCorrect / humanJudgment.get(label);
             double recall = (double) numCorrect / numInCluster;
 
             // Adds it to total precision and recall

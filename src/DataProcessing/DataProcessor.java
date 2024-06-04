@@ -29,7 +29,7 @@ public class DataProcessor {
             int fileCount = 0;
             try (DirectoryStream<Path> rawDirStream = Files.newDirectoryStream(rawDataSubDir)) {
                 for (Path path : rawDirStream) {
-                    if (fileCount > minSampleSize) { break; }
+                    if (fileCount >= minSampleSize) { break; }
                     Path fileName = path.getFileName();
                     String article = Files.readString(path, StandardCharsets.UTF_8).toLowerCase();
                     article = article.replaceAll("[^a-z]+", " ");

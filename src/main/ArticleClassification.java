@@ -72,11 +72,11 @@ public class ArticleClassification {
                 }
             }
             System.out.println("Normalizing training set...");
-            trainingSet.normalize(trainingSet);
+            trainingSet.normalize(trainingSet, trainingSet.getSize(), "training");
             System.out.println("Normalizing testing set...");
-            validationSet.normalize(trainingSet);
+            validationSet.normalize(trainingSet, validationSet.getSize(), "validation");
             System.out.println("Normalizing validation set...");
-            testingSet.normalize(trainingSet);
+            testingSet.normalize(trainingSet, testingSet.getSize(), "testing");
 
             //Serialize generated sets (Blake)
             System.out.println("Serializing normalized training set...");
@@ -87,8 +87,8 @@ public class ArticleClassification {
             writeDocumentCollection(validationSet, serializedValidationSetPath);
         }
 
-        double threshold = 0.1;
-        int maxK = 50;
+        double threshold = 0.001;
+        int maxK = 2000;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
         System.out.println("Tuning k...");
         int k = knn.tuneK(threshold, maxK);

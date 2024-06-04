@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.Map.Entry;
 
 public abstract class TextVector implements Serializable {
 
@@ -58,7 +57,7 @@ public abstract class TextVector implements Serializable {
     public abstract Set<Map.Entry<String, Double>> getNormalizedVectorEntrySet();
     //returns the normalized frequency for each word
 
-    public abstract void normalize(DocumentCollection dc);
+    public abstract void normalize(DocumentCollection dc, int id, int totalDocs, String set);
     //will normalize the frequency of each word using the TF-IDF formula
 
     public abstract double getNormalizedFrequency(String word);

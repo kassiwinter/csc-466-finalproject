@@ -54,10 +54,11 @@ public class DocumentCollection implements Serializable {
         }
     }
 
-    public void normalize(DocumentCollection dc) {
+    public void normalize(DocumentCollection dc, int totalDocs, String set) {
         // Calls the normalize(dc) function on each document in the collection
+        int i = 1;
         for (TextVector document : getDocuments()) {
-            document.normalize(dc);
+            document.normalize(dc, i++, totalDocs, set);
         }
     }
 

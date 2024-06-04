@@ -59,9 +59,10 @@ public class KNearestNeighbors {
     public int tuneK(double threshold, int maxK) {
         HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
         double bestF1 = 0;
+        double prevF1 = 0;
         int bestK = 1;
 
-        for (int k = 1; k <= maxK; k++) {
+        for (int k = 100; k <= maxK; k+=100) {
             System.out.printf("[%s] Trying k = %d\n",
                     new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(new java.util.Date()),
                     k);
@@ -72,12 +73,15 @@ public class KNearestNeighbors {
             }
             double[] metrics = calcPrecisionAndRecall(computerJudgement);
             double currentF1 = calcF1(metrics[0], metrics[1]);
+            System.out.println("F1: " + currentF1);
+            System.out.println("Increase of: " + (currentF1 - prevF1));
             if (currentF1 > bestF1 + threshold) {
                 bestF1 = currentF1;
                 bestK = k;
             } else {
                 break;
             }
+            prevF1 = currentF1;
         }
         return bestK;
     }
@@ -114,7 +118,7 @@ public class KNearestNeighbors {
         // using dynamic mapping of closest documents, so they don't have to be found every time `predict()` runs
         List<Integer> nearestDocs;
         if (k > numClosestDocuments) {
-            System.err.println("k > numClosestDocuments. Expect reduced performance.");
+            //System.err.println("k > numClosestDocuments. Expect reduced performance.");
             nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
         } else {
             ArrayList<Integer> closestDocs =
@@ -127,19 +131,24 @@ public class KNearestNeighbors {
         for (int i = 0; i < k; i++) {
             TextVector givenDoc = trainingSet.getDocumentById(nearestDocs.get(i));
             Integer label = givenDoc.getLabel();  
-
             labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
         }
 
-        return Collections.max(labelCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+        Map<Integer, Double> labelCountProportions = new HashMap<>();
+        for (Map.Entry<Integer, Map<Integer, TextVector>> docsByLabel : trainingDocsByLabel.entrySet()) {
+            labelCountProportions.put(docsByLabel.getKey(), (double) labelCount.get(docsByLabel.getKey()) / docsByLabel.getValue().size());
+        }
+
+        return Collections.max(labelCountProportions.entrySet(), Map.Entry.comparingByValue()).getKey();
     }
 
     private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
         double totalPrecision = 0.0;
         double totalRecall = 0.0;
         HashMap<Integer, Integer> humanJudgment = new HashMap<>();
-
-         // Loop #1: Get the number of actual given labels in each category
+        System.out.println("Computer Judgment");
+        computerJudgement.forEach((key, value) -> System.out.println("Label: " + key + " Size: " + value.getSize()));
+                // Loop #1: Get the number of actual given labels in each category
          for (int label : computerJudgement.keySet()) {
             DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
             Collection<TextVector> predictions = predictedLabelCollection.getDocuments();  
@@ -151,7 +160,9 @@ public class KNearestNeighbors {
                 int newLabelCount = humanJudgment.get(doc.getLabel()) + 1;
                 humanJudgment.put(doc.getLabel(), newLabelCount);
             }
-        }   
+        }
+         System.out.println("Human Judgment");
+         humanJudgment.forEach((label, count) -> System.out.println("Label: " + label + " Count: " + count));
 
         // Loop # 2: Get the number of correct label perdictions (assigned vs accurate)
         for (int label : computerJudgement.keySet()) {                                      // go through each label (1, 0, -1) / bias category

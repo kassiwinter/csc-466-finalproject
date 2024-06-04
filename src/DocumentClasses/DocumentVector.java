@@ -24,14 +24,18 @@ public class DocumentVector extends TextVector {
     }
 
     @Override
-    public void normalize(DocumentCollection dc) {
+    public void normalize(DocumentCollection dc, int id, int totalDocs, String set) {
         /* Normalize the frequency of each word in rawVector using TF-IDF */
+        System.out.println(id + " / " + totalDocs + " : " + set);
         for (Map.Entry<String, Integer> entry : getRawVectorEntrySet()) {
+            double idf = 0;
             String word = entry.getKey();
 
             int numDocs = dc.getSize();
             int docFreq = dc.getDocumentFrequency(word);
-            double idf = Math.log(numDocs/(double)docFreq) / Math.log(2);  // log base a of b == ln(b) / ln(a)
+            if (docFreq > 0) {
+                idf = Math.log(numDocs/(double)docFreq) / Math.log(2);  // log base a of b == ln(b) / ln(a)
+            }
 
             int docRawFreq = getRawFrequency(word);
             int docMaxRawFreq = getHighestRawFrequency();

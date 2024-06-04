@@ -80,8 +80,6 @@ public class KNearestNeighbors {
             if (currentF1 > bestF1 + threshold) {
                 bestF1 = currentF1;
                 bestK = k;
-            } else {
-                break;
             }
         }
         return bestK;

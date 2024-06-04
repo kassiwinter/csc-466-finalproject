@@ -12,7 +12,7 @@ public class KNearestNeighbors {
     /**
      * The number of closestDocuments to store under the hood. Saves repeat computations.
      */
-    private static final int numClosestDocuments = 50;
+    private static final int numClosestDocuments = 2000;
 
     private final DocumentCollection trainingSet;
     private final DocumentCollection validationSet;
@@ -62,7 +62,7 @@ public class KNearestNeighbors {
         double prevF1 = 0;
         int bestK = 1;
 
-        for (int k = 100; k <= maxK; k+=100) {
+        for (int k = 50; k <= maxK; k+=50) {
             System.out.printf("[%s] Trying k = %d\n",
                     new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(new java.util.Date()),
                     k);
@@ -136,7 +136,7 @@ public class KNearestNeighbors {
 
         Map<Integer, Double> labelCountProportions = new HashMap<>();
         for (Map.Entry<Integer, Map<Integer, TextVector>> docsByLabel : trainingDocsByLabel.entrySet()) {
-            labelCountProportions.put(docsByLabel.getKey(), (double) labelCount.get(docsByLabel.getKey()) / docsByLabel.getValue().size());
+            labelCountProportions.put(docsByLabel.getKey(), (double) labelCount.getOrDefault(docsByLabel.getKey(), 0) / docsByLabel.getValue().size());
         }
 
         return Collections.max(labelCountProportions.entrySet(), Map.Entry.comparingByValue()).getKey();

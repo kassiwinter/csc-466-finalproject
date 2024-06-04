@@ -13,6 +13,7 @@ public abstract class TextVector implements Serializable {
      */
     private HashMap<String, Integer> rawVector;
     private Bias label;
+    private int hashCode;
 
     public TextVector(String category) {
         this.rawVector = new HashMap<>();
@@ -51,6 +52,7 @@ public abstract class TextVector implements Serializable {
             System.out.println("An exception occurred while trying to read file at " + filepath);
             System.err.println(e.getMessage());
         }
+        this.hashCode = Objects.hash(rawVector, label);
         return this;
     }
 
@@ -194,5 +196,22 @@ public abstract class TextVector implements Serializable {
         Bias(int value) {
             this.value = value;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        TextVector other = (TextVector) obj;
+        return this.rawVector.equals(other.rawVector) && this.label.equals(other.label);
     }
 }

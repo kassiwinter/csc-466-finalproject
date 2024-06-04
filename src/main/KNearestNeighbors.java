@@ -4,6 +4,7 @@ import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
 import DocumentClasses.TextVector;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -61,6 +62,9 @@ public class KNearestNeighbors {
         int bestK = 1;
 
         for (int k = 1; k <= maxK; k++) {
+            System.out.printf("[%s] Trying k = %d\n",
+                    new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(new java.util.Date()),
+                    k);
             for (TextVector document : validationSet.getDocuments()) {
                 int predictedLabel = predict(document, k);
                 computerJudgement.putIfAbsent(predictedLabel, new DocumentCollection());
@@ -113,8 +117,9 @@ public class KNearestNeighbors {
             System.err.println("k > numClosestDocuments. Expect reduced performance.");
             nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
         } else {
-            closestTrainingDocs.putIfAbsent(document,
-                    document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance()));
+            ArrayList<Integer> closestDocs =
+                    document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance());
+            closestTrainingDocs.putIfAbsent(document, closestDocs);
             nearestDocs = closestTrainingDocs.get(document).subList(0, k);
         }
 

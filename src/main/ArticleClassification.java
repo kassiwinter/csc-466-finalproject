@@ -88,10 +88,10 @@ public class ArticleClassification {
         }
 
         double threshold = 0.1;
-        int maxK = 10;
+        int maxK = 50;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
         System.out.println("Tuning k...");
-        int k = knn.tuneK(threshold);
+        int k = knn.tuneK(threshold, maxK);
         System.out.println("Testing k = " + k + "...");
         double[] metrics = knn.test(k);
         System.out.println("Precision: " + metrics[0]);

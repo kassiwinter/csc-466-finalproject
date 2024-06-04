@@ -6,6 +6,7 @@ import DocumentClasses.TextVector;
 
 import java.util.*;
 
+
 public class KNearestNeighbors {
     /**
      * The number of closestDocuments to store under the hood. Saves repeat computations.
@@ -54,10 +55,29 @@ public class KNearestNeighbors {
      * @param threshold The minimum improvement in f1 score required to consider an increase in k worthwhile.
      * @return The value of k determined to be optimal.
      */
-    public int tuneK(double threshold) {
-        // TODO: Implement tuneK
-        return 0;
+    public int tuneK(double threshold, int maxK) {
+        HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
+        double bestF1 = 0;
+        int bestK = 1;
+
+        for (int k = 1; k <= maxK; k++) {
+            for (TextVector document : validationSet.getDocuments()) {
+                int predictedLabel = predict(document, k);
+                computerJudgement.putIfAbsent(predictedLabel, new DocumentCollection());
+                computerJudgement.get(predictedLabel).addDocument(document);
+            }
+            double[] metrics = calcPrecisionAndRecall(computerJudgement);
+            double currentF1 = calcF1(metrics[0], metrics[1]);
+            if (currentF1 > bestF1 + threshold) {
+                bestF1 = currentF1;
+                bestK = k;
+            } else {
+                break;
+            }
+        }
+        return bestK;
     }
+
 
     /**
      * Tests the performance of kNN using the given value of k.
@@ -69,10 +89,15 @@ public class KNearestNeighbors {
      * @return an array of doubles representing (in order): precision, recall, f1 score
      */
     public double[] test(int k) {
-        // TODO: Implement test
-        double[] metrics = {0.0, 0.0, 0.0};
-        // compute precision, recall, f1 score and insert into metrics
-        return metrics;
+        HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
+        for (TextVector document : testingSet.getDocuments()) {
+            int predictedLabel = predict(document, k);
+            computerJudgement.putIfAbsent(predictedLabel, new DocumentCollection());
+            computerJudgement.get(predictedLabel).addDocument(document);
+        }
+        double[] metrics = calcPrecisionAndRecall(computerJudgement);
+        double f1 = calcF1(metrics[0], metrics[1]);
+        return new double[]{metrics[0], metrics[1], f1};
     }
 
     /**
@@ -96,7 +121,8 @@ public class KNearestNeighbors {
         Map<Integer, Integer> labelCount = new HashMap<>();
         for (int i = 0; i < k; i++) {
             TextVector givenDoc = trainingSet.getDocumentById(nearestDocs.get(i));
-            Integer label = givenDoc.getLabel();
+            Integer label = givenDoc.getLabel();  
+
             labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
         }
 
@@ -152,10 +178,13 @@ public class KNearestNeighbors {
         double macroAvgRecall = totalRecall / computerJudgement.size();
 
         return new double[]{macroAvgPrecision, macroAvgRecall};
-
     }
+
 
     private double calcF1(double precision, double recall) {
         return (2 * precision * recall) / (precision + recall);
     }
 }
+
+
+

@@ -1,7 +1,6 @@
 package DocumentClasses;
 
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -171,6 +170,18 @@ public class DocumentCollection implements Serializable {
         }
         return ret;
     }
+
+    /**
+     * Returns a map of doc IDs to TextVectors for a given label.
+     * @param label The label to filter documents by.
+     * @return A map of document IDs to TextVectors for the given label.
+     */
+    public Map<Integer, TextVector> docsWithLabels(int label) {
+        return documents.entrySet().stream()
+                .filter(entry -> entry.getValue().getLabel() == label)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
 
     private static HashSet<String> readWordList(String filepath) {
         HashSet<String> wordList = new HashSet<>();

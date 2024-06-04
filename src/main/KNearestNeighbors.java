@@ -133,13 +133,27 @@ public class KNearestNeighbors {
             Integer label = givenDoc.getLabel();  
             labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
         }
-
+/*
         Map<Integer, Double> labelCountProportions = new HashMap<>();
         for (Map.Entry<Integer, Map<Integer, TextVector>> docsByLabel : trainingDocsByLabel.entrySet()) {
             labelCountProportions.put(docsByLabel.getKey(), (double) labelCount.get(docsByLabel.getKey()) / docsByLabel.getValue().size());
         }
 
         return Collections.max(labelCountProportions.entrySet(), Map.Entry.comparingByValue()).getKey();
+ */
+        //KNN regression implementation
+        // Since the labels have encoded values, we can just have a running total and then divide by k for the average
+        int labelTotal = 0;
+        for (Integer id : nearestDocs) {
+            labelTotal += trainingSet.getDocumentById(id).getLabel();
+        }
+        int prediction = (int) Math.round(labelTotal / (double) k);
+        // return -1 if (-inf, -0.5),
+        //         0 if [-0.5,  0.5),
+        //         1 if [ 0.5,  inf)
+        return (prediction < -.5) ?
+                -1 :
+                (prediction < .5 ? 0 : 1);
     }
 
     private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {

@@ -21,6 +21,10 @@ public class ArticleClassification {
     private static final String serializedTestingSetPath = "src/main/files/serializedTestingSet.ser";
     private static final String serializedValidationSetPath = "src/main/files/serializedValidationSet.ser";
 
+    private static final int PRECISION = KNearestNeighbors.PRECISION;
+    private static final int RECALL = KNearestNeighbors.RECALL;
+    private static final int F1 = KNearestNeighbors.F1;
+
     public static void main(String[] args) {
         // going into main function, we have processed data for each category at ../data/processed
 
@@ -87,16 +91,16 @@ public class ArticleClassification {
             writeDocumentCollection(validationSet, serializedValidationSetPath);
         }
 
-        double threshold = 0.00001;
+        double threshold = 0.0001;
         int maxK = 3000;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
         System.out.println("Tuning k...");
         int k = knn.tuneK(threshold, maxK);
         System.out.println("Testing k = " + k + "...");
         double[] metrics = knn.test(k);
-        System.out.println("Precision: " + metrics[0]);
-        System.out.println("Recall: " + metrics[1]);
-        System.out.println("F1: " + metrics[2]);
+        System.out.println("Precision: " + metrics[PRECISION]);
+        System.out.println("Recall: " + metrics[RECALL]);
+        System.out.println("F1: " + metrics[F1]);
 
 
         // TODO GRANT: normalize each subset with respect to the training set.

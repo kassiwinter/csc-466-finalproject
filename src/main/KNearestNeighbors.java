@@ -6,16 +6,18 @@ import DocumentClasses.TextVector;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.DoubleStream;
 
 
 public class KNearestNeighbors {
+    public static final int PRECISION = 0;
+    public static final int RECALL = 1;
+    public static final int F1 = 2;
+
     /**
      * The number of closestDocuments to store under the hood. Saves repeat computations.
      */
     private static final int numClosestDocuments = 3000;
-    private static final int LEFT = 0;
-    private static final int CENTER = 1;
-    private static final int RIGHT = 2;
 
     private final DocumentCollection trainingSet;
     private final DocumentCollection validationSet;
@@ -61,27 +63,41 @@ public class KNearestNeighbors {
      */
     public int tuneK(double threshold, int maxK) {
         HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
-        double bestF1 = 0;
-        int bestK = 1;
+        int initialK = 50;
+        int bestK = initialK;
+        double prevF1 = 0;
 
-        for (int k = 200; k <= maxK; k+=100) {
+        double[] prevF1Diffs = {threshold, threshold, threshold};
+
+        for (int k = initialK; k <= maxK; k+=50) {
             System.out.printf("[%s] Trying k = %d\n",
                     new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(new java.util.Date()),
                     k);
-            for (TextVector document : validationSet.getDocuments()) {
-                int predictedLabel = predict(document, k);
-                computerJudgement.putIfAbsent(predictedLabel, new DocumentCollection());
-                computerJudgement.get(predictedLabel).addDocument(document);
-            }
-            double[] metrics = calcPrecisionAndRecall(computerJudgement);
-            double currentF1 = calcF1(metrics[0], metrics[1]);
+            double[] metrics = test(k, validationSet);
+            double currentF1 = metrics[F1];
             System.out.printf("   precision = %f\n   recall = %f\n   F1 = %f\n",
-                    metrics[0], metrics[1], currentF1);
-            if (currentF1 > bestF1 + threshold) {
-                bestF1 = currentF1;
+                    metrics[PRECISION], metrics[RECALL], metrics[F1]);
+            double runningDiffAvg = DoubleStream.of(prevF1Diffs).sum() / (double) prevF1Diffs.length;
+            System.out.printf("Last three F1 diffs: %s (avg: %f)\ncurrent - prev = %f\n",
+                    Arrays.toString(prevF1Diffs),
+                    runningDiffAvg,
+                    currentF1 - prevF1);
+            if (runningDiffAvg >= threshold) {
+                prevF1Diffs[k % prevF1Diffs.length] = currentF1 - prevF1;
                 bestK = k;
+                prevF1 = currentF1;
+            } else {
+                break;
             }
         }
+        // If threshold is
+//        if (DoubleStream.of(prevF1Diffs).anyMatch(d -> d == 0)) {
+//            int maxAt = 0;
+//            for (int i = 0; i < prevF1Diffs.length; i++) {
+//                maxAt = prevF1Diffs[i] > prevF1Diffs[maxAt] ? i : maxAt;
+//            }
+//            return initialK * maxAt;
+//        }
         return bestK;
     }
 
@@ -102,9 +118,21 @@ public class KNearestNeighbors {
             computerJudgement.putIfAbsent(predictedLabel, new DocumentCollection());
             computerJudgement.get(predictedLabel).addDocument(document);
         }
-        double[] metrics = calcPrecisionAndRecall(computerJudgement);
-        double f1 = calcF1(metrics[0], metrics[1]);
-        return new double[]{metrics[0], metrics[1], f1};
+//        double[] metrics = calcPrecisionAndRecall(computerJudgement);
+//        double f1 = calcF1(metrics[0], metrics[1]);
+        return calcMetrics(computerJudgement);
+    }
+
+    public double[] test(int k, DocumentCollection dataSet) {
+        HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
+        for (int label : dataSet.uniqueLabels()) {
+            computerJudgement.put(label, new DocumentCollection());
+        }
+        for (TextVector document : dataSet.getDocuments()) {
+            int predictedLabel = predict(document, k);
+            computerJudgement.get(predictedLabel).addDocument(document);
+        }
+        return calcMetrics(computerJudgement);
     }
 
     /**
@@ -126,7 +154,7 @@ public class KNearestNeighbors {
             nearestDocs = closestTrainingDocs.get(document).subList(0, k);
         }
 
-
+        // Since the labels have encoded values, we can just have a running total and then divide by k for the average
         int labelTotal = 0;
         for (Integer id : nearestDocs) {
             labelTotal += trainingSet.getDocumentById(id).getLabel();
@@ -140,6 +168,17 @@ public class KNearestNeighbors {
                 (prediction < .5 ? 0 : 1);
     }
 
+
+
+    private double[] calcMetrics(HashMap<Integer, DocumentCollection> computerJudgement) {
+        double[] precisionRecall = calcPrecisionAndRecall(computerJudgement);
+        return new double[] {
+                precisionRecall[PRECISION],
+                precisionRecall[RECALL],
+                calcF1(precisionRecall[PRECISION], precisionRecall[RECALL])
+        };
+    }
+
     private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
         double totalPrecision = 0.0;
         double totalRecall = 0.0;
@@ -147,11 +186,11 @@ public class KNearestNeighbors {
 
          // Loop #1: Get the number of actual given labels in each category
          for (int label : computerJudgement.keySet()) {
-            DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
-            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();  
+            DocumentCollection predictedLabelCollection = computerJudgement.get(label);
+            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();  // all documents for labels
 
-            for (TextVector doc : predictions) {
-                if (!humanJudgment.containsKey(doc.getLabel())) { 
+            for (TextVector doc : predictions) { // for every doc computer predicted for given label
+                if (!humanJudgment.containsKey(doc.getLabel())) {
                     humanJudgment.put(doc.getLabel(), 0);
                 }
                 int newLabelCount = humanJudgment.get(doc.getLabel()) + 1;
@@ -183,12 +222,13 @@ public class KNearestNeighbors {
 
         }
 
-
         // Calculates the macro average precision and recall
         double macroAvgPrecision = totalPrecision / computerJudgement.size();
         double macroAvgRecall = totalRecall / computerJudgement.size();
-
-        return new double[]{macroAvgPrecision, macroAvgRecall};
+        double[] res = new double[2];
+        res[PRECISION] = macroAvgPrecision;
+        res[RECALL] = macroAvgRecall;
+        return res;
     }
 
 

@@ -39,6 +39,7 @@ public class ArticleClassification {
         }
 
         // Attempt to load testing/training/validation sets from serialized objects. (Blake)
+        System.out.println("Attempting to read testing/training/validation sets...");
         DocumentCollection trainingSet = readDocumentCollection(serializedTrainingSetPath);
         DocumentCollection testingSet = readDocumentCollection(serializedTestingSetPath);
         DocumentCollection validationSet = readDocumentCollection(serializedValidationSetPath);
@@ -168,7 +169,6 @@ public class ArticleClassification {
         } catch (IOException | ClassNotFoundException e) {
             System.err.println(e.getMessage());
             System.out.println("Couldn't load DocumentCollection from path " + path);
-            e.printStackTrace(System.err);
         }
         return collection;
     }
@@ -185,7 +185,6 @@ public class ArticleClassification {
         } catch (Exception e) {
             System.err.println("Serializing DocumentCollection to path " + path + " failed.");
             System.err.println(e.getMessage());
-            e.printStackTrace(System.err);
         }
     }
 }

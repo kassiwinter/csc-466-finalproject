@@ -12,7 +12,7 @@ public class KNearestNeighbors {
     /**
      * The number of closestDocuments to store under the hood. Saves repeat computations.
      */
-    private static final int numClosestDocuments = 50;
+    private static final int numClosestDocuments = 3000;
     private static final int LEFT = 0;
     private static final int CENTER = 1;
     private static final int RIGHT = 2;

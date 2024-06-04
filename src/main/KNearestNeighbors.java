@@ -64,7 +64,7 @@ public class KNearestNeighbors {
         double bestF1 = 0;
         int bestK = 1;
 
-        for (int k = 1; k <= maxK; k++) {
+        for (int k = 200; k <= maxK; k+=100) {
             System.out.printf("[%s] Trying k = %d\n",
                     new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(new java.util.Date()),
                     k);

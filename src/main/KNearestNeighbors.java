@@ -13,6 +13,9 @@ public class KNearestNeighbors {
      * The number of closestDocuments to store under the hood. Saves repeat computations.
      */
     private static final int numClosestDocuments = 50;
+    private static final int LEFT = 0;
+    private static final int CENTER = 1;
+    private static final int RIGHT = 2;
 
     private final DocumentCollection trainingSet;
     private final DocumentCollection validationSet;
@@ -72,6 +75,8 @@ public class KNearestNeighbors {
             }
             double[] metrics = calcPrecisionAndRecall(computerJudgement);
             double currentF1 = calcF1(metrics[0], metrics[1]);
+            System.out.printf("   precision = %f\n   recall = %f\n   F1 = %f\n",
+                    metrics[0], metrics[1], currentF1);
             if (currentF1 > bestF1 + threshold) {
                 bestF1 = currentF1;
                 bestK = k;
@@ -123,15 +128,18 @@ public class KNearestNeighbors {
             nearestDocs = closestTrainingDocs.get(document).subList(0, k);
         }
 
-        Map<Integer, Integer> labelCount = new HashMap<>();
-        for (int i = 0; i < k; i++) {
-            TextVector givenDoc = trainingSet.getDocumentById(nearestDocs.get(i));
-            Integer label = givenDoc.getLabel();  
 
-            labelCount.put(label, labelCount.getOrDefault(label, 0) + 1);
+        int labelTotal = 0;
+        for (Integer id : nearestDocs) {
+            labelTotal += trainingSet.getDocumentById(id).getLabel();
         }
-
-        return Collections.max(labelCount.entrySet(), Map.Entry.comparingByValue()).getKey();
+        int prediction = (int) Math.round(labelTotal / (double)k);
+        // return -1 if (-inf, -0.5),
+        //         0 if [-0.5,  0.5),
+        //         1 if [ 0.5,  inf)
+        return (prediction < -.5) ?
+                -1 :
+                (prediction < .5 ? 0 : 1);
     }
 
     private double[] calcPrecisionAndRecall(HashMap<Integer, DocumentCollection> computerJudgement) {
@@ -153,10 +161,10 @@ public class KNearestNeighbors {
             }
         }   
 
-        // Loop # 2: Get the number of correct label perdictions (assigned vs accurate)
+        // Loop # 2: Get the number of correct label predictions (assigned vs accurate)
         for (int label : computerJudgement.keySet()) {                                      // go through each label (1, 0, -1) / bias category
             DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
-            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();   // access all of the docs predicted under that category
+            Collection<TextVector> predictions = predictedLabelCollection.getDocuments();   // access all docs predicted under that category
 
             int numCorrect = 0;
             int numInCluster = predictions.size();

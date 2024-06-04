@@ -31,6 +31,7 @@ public class DocumentVector extends TextVector {
 
             int numDocs = dc.getSize();
             int docFreq = dc.getDocumentFrequency(word);
+            if (docFreq == 0) {normalizedVector.put(word, 0.0); continue;} // short circuit
             double idf = Math.log(numDocs/(double)docFreq) / Math.log(2);  // log base a of b == ln(b) / ln(a)
 
             int docRawFreq = getRawFrequency(word);

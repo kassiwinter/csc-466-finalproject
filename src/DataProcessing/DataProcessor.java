@@ -1,6 +1,7 @@
 package DataProcessing;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -20,12 +21,15 @@ public class DataProcessor {
         }
         Path rawDataDir = Paths.get(rawDataDirPath);
         Path processedDataDir = Paths.get(processedDataDirPath);
+        int minSampleSize = minimumSampleSize();
         for (String subDir : dataSubDirs) {
             Path rawDataSubDir = rawDataDir.resolve(subDir);
             Path processedDataSubDir = processedDataDir.resolve(subDir);
             // Iterate through every file in each subdirectory in raw/
+            int fileCount = 0;
             try (DirectoryStream<Path> rawDirStream = Files.newDirectoryStream(rawDataSubDir)) {
                 for (Path path : rawDirStream) {
+                    if (fileCount > minSampleSize) { break; }
                     Path fileName = path.getFileName();
                     String article = Files.readString(path, StandardCharsets.UTF_8).toLowerCase();
                     article = article.replaceAll("[^a-z]+", " ");
@@ -33,6 +37,7 @@ public class DataProcessor {
                     try (FileWriter fw = new FileWriter(processedDataSubDir.resolve(fileName).toString(), false)) {
                         fw.write(article);
                     }
+                    fileCount++;
                 }
             } catch (Exception e) {
                 System.out.println("An unspecified exception occurred.");
@@ -41,6 +46,19 @@ public class DataProcessor {
                 System.exit(1);
             }
         }
+    }
+
+    private static int minimumSampleSize() {
+        int minNumFiles = Integer.MAX_VALUE;
+        Path rawDataDir = Paths.get(rawDataDirPath);
+        for (String subDir : dataSubDirs) {
+            Path rawDataSubDir = rawDataDir.resolve(subDir);
+            int numFiles = rawDataSubDir.toFile().list().length;
+            if (numFiles < minNumFiles) {
+                minNumFiles = numFiles;
+            }
+        }
+        return minNumFiles;
     }
 
     private static boolean verifyFileStructure() {

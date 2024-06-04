@@ -36,6 +36,9 @@
     * Process
     * Work
     * Results
+* Presentation - https://docs.google.com/presentation/d/1TYUZTP7W0tylIgqdXUCdTjfokhOWO92lUj05ZxDL8vw/edit?usp=sharing
+* Log File - https://docs.google.com/spreadsheets/d/19JqmmsZUCv2Bt1Z24hmacCzEmfV-THAkMgWOyRhToXQ/edit?usp=sharing
+* Report PDF - https://docs.google.com/document/d/1bQ4X9KE49DurhGRAjx2A1_UrcRed19MIVPOoSvn_NIw/edit?usp=sharing
 
 ### Design Architecture
 

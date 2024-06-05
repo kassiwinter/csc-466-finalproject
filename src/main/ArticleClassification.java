@@ -98,18 +98,6 @@ public class ArticleClassification {
         System.out.println("Recall: " + metrics[1]);
         System.out.println("F1: " + metrics[2]);
 
-
-        // TODO GRANT: normalize each subset with respect to the training set.
-        // this will require us to normalize training set with its self, and then normalize the
-        // validation/testing sets with respect to the tfidf values from the training normalization
-
-
-        // TODO KASSI: Make actual KNN function referencing Logan's KNN description
-
-        // TODO: use the validation set to find the best k value.
-        //       Measuring "best" here is a design decision we will have to make.
-
-        // TODO: use our selected k-value to evaluate with the testing set.
     }
 
     /*

@@ -12,7 +12,7 @@ public class KNearestNeighbors {
     /**
      * The number of closestDocuments to store under the hood. Saves repeat computations.
      */
-    private static final int numClosestDocuments = 50;
+    private static final int numClosestDocuments = 2000;
 
     private final DocumentCollection trainingSet;
     private final DocumentCollection validationSet;
@@ -57,12 +57,12 @@ public class KNearestNeighbors {
      * @return The value of k determined to be optimal.
      */
     public int tuneK(double threshold, int maxK) {
-        HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
-        double bestF1 = 0;
+        // double bestF1 = 0;
         double prevF1 = 0;
         int bestK = 1;
 
-        for (int k = 100; k <= maxK; k+=100) {
+        for (int k = 50; k <= maxK; k+=50) {
+            HashMap<Integer, DocumentCollection> computerJudgement = new HashMap<>();
             System.out.printf("[%s] Trying k = %d\n",
                     new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(new java.util.Date()),
                     k);
@@ -75,8 +75,8 @@ public class KNearestNeighbors {
             double currentF1 = calcF1(metrics[0], metrics[1]);
             System.out.println("F1: " + currentF1);
             System.out.println("Increase of: " + (currentF1 - prevF1));
-            if (currentF1 > bestF1 + threshold) {
-                bestF1 = currentF1;
+            if (Math.abs(currentF1 - prevF1) < threshold) {
+                // bestF1 = currentF1;
                 bestK = k;
             } else {
                 break;
@@ -121,9 +121,11 @@ public class KNearestNeighbors {
             //System.err.println("k > numClosestDocuments. Expect reduced performance.");
             nearestDocs = document.findNClosestDocuments(k, trainingSet, new CosineDistance());
         } else {
-            ArrayList<Integer> closestDocs =
-                    document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance());
-            closestTrainingDocs.putIfAbsent(document, closestDocs);
+            if (!closestTrainingDocs.containsKey(document)) {
+                ArrayList<Integer> closestDocs =
+                        document.findNClosestDocuments(numClosestDocuments, trainingSet, new CosineDistance());
+                closestTrainingDocs.put(document, closestDocs);
+            }
             nearestDocs = closestTrainingDocs.get(document).subList(0, k);
         }
 
@@ -136,7 +138,7 @@ public class KNearestNeighbors {
 
         Map<Integer, Double> labelCountProportions = new HashMap<>();
         for (Map.Entry<Integer, Map<Integer, TextVector>> docsByLabel : trainingDocsByLabel.entrySet()) {
-            labelCountProportions.put(docsByLabel.getKey(), (double) labelCount.get(docsByLabel.getKey()) / docsByLabel.getValue().size());
+            labelCountProportions.put(docsByLabel.getKey(), (double) labelCount.getOrDefault(docsByLabel.getKey(), 0) / docsByLabel.getValue().size());
         }
 
         return Collections.max(labelCountProportions.entrySet(), Map.Entry.comparingByValue()).getKey();
@@ -148,7 +150,7 @@ public class KNearestNeighbors {
         HashMap<Integer, Integer> humanJudgment = new HashMap<>();
         System.out.println("Computer Judgment");
         computerJudgement.forEach((key, value) -> System.out.println("Label: " + key + " Size: " + value.getSize()));
-                // Loop #1: Get the number of actual given labels in each category
+        // Loop #1: Get the number of actual given labels in each category
          for (int label : computerJudgement.keySet()) {
             DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
             Collection<TextVector> predictions = predictedLabelCollection.getDocuments();  
@@ -164,7 +166,7 @@ public class KNearestNeighbors {
          System.out.println("Human Judgment");
          humanJudgment.forEach((label, count) -> System.out.println("Label: " + label + " Count: " + count));
 
-        // Loop # 2: Get the number of correct label perdictions (assigned vs accurate)
+        // Loop # 2: Get the number of correct label predictions (assigned vs accurate)
         for (int label : computerJudgement.keySet()) {                                      // go through each label (1, 0, -1) / bias category
             DocumentCollection predictedLabelCollection = computerJudgement.get(label);     
             Collection<TextVector> predictions = predictedLabelCollection.getDocuments();   // access all of the docs predicted under that category

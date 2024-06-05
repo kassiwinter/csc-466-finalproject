@@ -24,20 +24,6 @@ public class ArticleClassification {
     public static void main(String[] args) {
         // going into main function, we have processed data for each category at ../data/processed
 
-        // DONE BY BLAKE : for each category in processed data build DocumentCollections,
-        //       put them into one single folder
-        HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
-        try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath),
-                /* stream filter: */ path -> labels.contains(path.getFileName().toString()))) {
-            for (Path classDir : dataDirStream) {
-                labeledDocCollections.put(classDir.getFileName().toString(),
-                        new DocumentCollection(classDir));
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace(System.err);
-        }
-
         // Attempt to load testing/training/validation sets from serialized objects. (Blake)
         System.out.println("Attempting to read testing/training/validation sets...");
         DocumentCollection trainingSet = readDocumentCollection(serializedTrainingSetPath);
@@ -48,6 +34,21 @@ public class ArticleClassification {
         if (trainingSet == null || testingSet == null || validationSet == null) {
             System.out.println("Failed to read serialized training, testing, or validation set.\n" +
                     "Generating new DocumentCollections...");
+
+            // DONE BY BLAKE : for each category in processed data build DocumentCollections,
+            //       put them into one single folder
+            HashMap<String, DocumentCollection> labeledDocCollections = new HashMap<>();
+            try (DirectoryStream<Path> dataDirStream = Files.newDirectoryStream(Paths.get(dataDirPath),
+                    /* stream filter: */ path -> labels.contains(path.getFileName().toString()))) {
+                for (Path classDir : dataDirStream) {
+                    labeledDocCollections.put(classDir.getFileName().toString(),
+                            new DocumentCollection(classDir));
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace(System.err);
+            }
+
             // DONE LOGAN: split each DocumentCollection into proportional training/validation/testing sets
             // for each labeled group, pick 70% for training, 10% for validation, 20% for testing
             // this will be a function where we can choose what % we want for training,val,testing

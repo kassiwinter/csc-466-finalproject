@@ -87,8 +87,8 @@ public class ArticleClassification {
             writeDocumentCollection(validationSet, serializedValidationSetPath);
         }
 
-        double threshold = 0.001;
-        int maxK = 2000;
+        double threshold = 0.0001;
+        int maxK = 1000;
         KNearestNeighbors knn = new KNearestNeighbors(trainingSet, validationSet, testingSet);
         System.out.println("Tuning k...");
         int k = knn.tuneK(threshold, maxK);

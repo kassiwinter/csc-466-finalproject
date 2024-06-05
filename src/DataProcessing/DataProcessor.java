@@ -1,6 +1,7 @@
 package DataProcessing;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -14,11 +15,34 @@ public class DataProcessor {
     public static final String processedDataDirPath = "data/processed";
     public static final String[] dataSubDirs = {"left", "center", "right"};
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
         if (!verifyFileStructure()) {
             System.err.print("Could not verify file structure.");
             System.exit(1);
         }
+        processData(100000);
+        int minSampleSize = minimumSampleSize();
+        System.out.println("Minimum sample size: " + minSampleSize);
+        Path processedDataDir = Paths.get(processedDataDirPath);
+        for (String subDir : dataSubDirs) {
+            Path dir = processedDataDir.resolve(subDir);
+            System.out.println("Deleting " + dir);
+            try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir)) {
+                for (Path file : dirStream) {
+                    if (!file.toFile().delete()) {
+                        System.err.println("Could not delete " + file);
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        System.out.println("===> Reprocessing with minimum sample size...");
+        verifyFileStructure();
+        processData(minSampleSize);
+    }
+
+    private static void processData(int minSampleSize) {
         HashSet<String> articleTextSet = new HashSet<>();
         Path rawDataDir = Paths.get(rawDataDirPath);
         Path processedDataDir = Paths.get(processedDataDirPath);
@@ -26,8 +50,10 @@ public class DataProcessor {
             Path rawDataSubDir = rawDataDir.resolve(subDir);
             Path processedDataSubDir = processedDataDir.resolve(subDir);
             // Iterate through every file in each subdirectory in raw/
+            int fileCount = 0;
             try (DirectoryStream<Path> rawDirStream = Files.newDirectoryStream(rawDataSubDir)) {
                 for (Path path : rawDirStream) {
+                    if (fileCount >= minSampleSize) { break; }
                     Path fileName = path.getFileName();
                     String article = Files.readString(path, StandardCharsets.UTF_8).toLowerCase();
                     article = article.replaceAll("[^a-z]+", " ");
@@ -35,6 +61,7 @@ public class DataProcessor {
                         // Write cleaned article to a file with the same name in processed/{subdir}
                         try (FileWriter fw = new FileWriter(processedDataSubDir.resolve(fileName).toString(), false)) {
                             fw.write(article);
+                            fileCount++;
                         }
                     }
                 }
@@ -45,6 +72,19 @@ public class DataProcessor {
                 System.exit(1);
             }
         }
+    }
+
+    private static int minimumSampleSize() {
+        int minNumFiles = Integer.MAX_VALUE;
+        Path processedDataDir = Paths.get(processedDataDirPath);
+        for (String subDir : dataSubDirs) {
+            Path processedDataSubDir = processedDataDir.resolve(subDir);
+            int numFiles = processedDataSubDir.toFile().list().length;
+            if (numFiles < minNumFiles) {
+                minNumFiles = numFiles;
+            }
+        }
+        return minNumFiles;
     }
 
     private static boolean verifyFileStructure() {

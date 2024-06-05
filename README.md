@@ -1,74 +1,10 @@
 # Article Classification using k-Nearest Neighbors
 #### Group: Grant Baer, Logan Baker, Blake Silton, and Kassi Winter
 
-### Overall Idea
-* Split docs into training, testing, validation sets (70-20-10)
-  * We can encode the labels as -1, 0, 1; 
-    don't need to use one-hot bc `left` is inherently further away from `right` than from `center`
-* Load up each into document collections
-  * Do we normalize these?
-* TF-IDF to find 500 (subject to change) most common words
-* See how different values of k perform (using validation set for hyperparameter tuning)
-    ```python
-    f1_scores = []
-    for k in range(max_k):
-        computer_classification = {}  # Note this is a dict
-        for v_doc in validation_set:  # is this a query?
-            closest_docs = find_k_closest_docs(v_doc, k, training_set)
-            computer_classification[v_doc] = avg_label(closest_docs)  # maybe median instead of mean?
-        f1_scores.append(calc_f1(computer_classification, testing_set))
-    ```
-* Determine best k value (using an objective metric OR shoulder method), then use testing set to check results
-
-
-### To-Do
-* Design project structure
-  * Which classes do we want to keep?
-  * What classes do we want to create?
-* Clean data set ✅
-* Expand list of noise/stop words ✅
-  * https://github.com/stopwords-iso/stopwords-en/blob/master/stopwords-en.txt
-* Implement a stemming function?
-* Read data into DocumentCollection
-* Final report
-    * Goals
-    * Design
-    * Process
-    * Work
-    * Results
-* Presentation - https://docs.google.com/presentation/d/1TYUZTP7W0tylIgqdXUCdTjfokhOWO92lUj05ZxDL8vw/edit?usp=sharing
-* Log File - https://docs.google.com/spreadsheets/d/19JqmmsZUCv2Bt1Z24hmacCzEmfV-THAkMgWOyRhToXQ/edit?usp=sharing
-* Report PDF - https://docs.google.com/document/d/1bQ4X9KE49DurhGRAjx2A1_UrcRed19MIVPOoSvn_NIw/edit?usp=sharing
-
-### Design Architecture
-
-#### Structure
-```
-project
-├─ data/
-│   ├── raw/
-│   │   ├─ left/
-│   │   ├─ center/
-│   │   └─ right/
-│   └── processed/
-│       ├─ left/
-│       ├─ center/
-│       └─ right/
-└─ src/
-    ├─ DataProcessing/
-    │   └─ DataProcessor.java
-    ├─ DocumentClasses/
-    │   ├─ CosineDistance.java
-    │   ├─ DocumentCollection.java
-    │   ├─ <interface> DocumentDistance.java
-    │   ├─ DocumentVector.java
-    │   ├─ <abstract> TextVector.java
-    │   └─ files/
-    │       └─ stopwords-en.txt
-    └─ main/
-        ├─ ArticleClassification.java
-        └─ KNearestNeighbors.java
-```
+### Documents
+* [Report](https://docs.google.com/document/d/1bQ4X9KE49DurhGRAjx2A1_UrcRed19MIVPOoSvn_NIw/edit?usp=sharing)
+* [Work Log](https://docs.google.com/spreadsheets/d/19JqmmsZUCv2Bt1Z24hmacCzEmfV-THAkMgWOyRhToXQ/edit?usp=sharing)
+* [Presentation](https://docs.google.com/presentation/d/1TYUZTP7W0tylIgqdXUCdTjfokhOWO92lUj05ZxDL8vw/edit?usp=sharing)
 
 ### Final Project Design
 #### ArticleClassification

@@ -31,7 +31,7 @@ public class ArticleClassification {
                 /* stream filter: */ path -> labels.contains(path.getFileName().toString()))) {
             for (Path classDir : dataDirStream) {
                 labeledDocCollections.put(classDir.getFileName().toString(),
-                        new DocumentCollection(classDir, "document"));
+                        new DocumentCollection(classDir));
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

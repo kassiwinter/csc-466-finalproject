@@ -6,6 +6,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 
 public class DataProcessor {
 
@@ -18,6 +19,7 @@ public class DataProcessor {
             System.err.print("Could not verify file structure.");
             System.exit(1);
         }
+        HashSet<String> articleTextSet = new HashSet<>();
         Path rawDataDir = Paths.get(rawDataDirPath);
         Path processedDataDir = Paths.get(processedDataDirPath);
         for (String subDir : dataSubDirs) {
@@ -29,9 +31,11 @@ public class DataProcessor {
                     Path fileName = path.getFileName();
                     String article = Files.readString(path, StandardCharsets.UTF_8).toLowerCase();
                     article = article.replaceAll("[^a-z]+", " ");
-                    // Write cleaned article to a file with the same name in processed/{subdir}
-                    try (FileWriter fw = new FileWriter(processedDataSubDir.resolve(fileName).toString(), false)) {
-                        fw.write(article);
+                    if (articleTextSet.add(article)) { // returns false if article already in set
+                        // Write cleaned article to a file with the same name in processed/{subdir}
+                        try (FileWriter fw = new FileWriter(processedDataSubDir.resolve(fileName).toString(), false)) {
+                            fw.write(article);
+                        }
                     }
                 }
             } catch (Exception e) {

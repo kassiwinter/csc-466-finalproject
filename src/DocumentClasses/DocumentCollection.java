@@ -1,6 +1,7 @@
 package DocumentClasses;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,9 +36,8 @@ public class DocumentCollection implements Serializable {
     /**
      * Reads the folder specified as input and uses the files in the folder to populate the documents variable.
      * @param   dirPath     the path to the folder to open
-     * @param   docType     if not "document", treat as query
      */
-    public DocumentCollection(Path dirPath, String docType) {
+    public DocumentCollection(Path dirPath) {
         documents = new HashMap<>();
         maxId = 0;
         String label = dirPath.getFileName().toString();  // the name of the directory, e.g. "center"
